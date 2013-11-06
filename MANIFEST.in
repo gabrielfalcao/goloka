@@ -1,0 +1,5 @@
+include requirements.txt
+include requirements-dev.txt
+include README.md
+recursive-include goloka/templates *.html
+recursive-include goloka/static *.*

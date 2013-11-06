@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block body_attributes %}ng-controller="DashboardController" data-socketaddress="{{ settings.SCHEMA }}{{ settings.DOMAIN }}" {% endblock %}
+
+{% block nav %}
+      <ul class="uk-navbar-nav uk-text-large" data-uk-switcher="{connect:'#panes'}">
+        <li class="uk-active"><a href="#howto" >Welcome</a></li>
+        {% for org in organizations %}
+          <li><a href="#{{ org.login }}pane" ng-click="SelectOrganizationTab('{{ org.login }}')">{{ org.login }}</a></li>
+        {% endfor %}
+      </ul>
+{% endblock %}
+{% block main %}
+<object id="socket-meta"
+        data-username="{{ github_user.login }}"></object>
+<object id="dashboard-meta"
+        project="{login}-PLACEHOLDER".format(**github_user)) }}"
+        data-create-hook-ajax-url="{{ url_for(".create_hook") }}"
+        data-context-ajax-url="{{ url_for(".ajax_dashboard_repo_list", owner="PLACEHOLDER") }}"></object>
+
+<div class="main uk-grid">
+  <div class="uk-width-1-1">
+    <article class="uk-article uk-container uk-container-center">
+      <hr />
+
+      <!-- This is the container of the content items -->
+      <ul id="panes" class="uk-switcher">
+        <li class="uk-text-center"  id="howto">
+          <i style="font-size: 150px" class="uk-icon-globe uk-icon-large"></i>
+          <h1>Welcome to Goloka</h1>
+
+          <br />
+          <div class="uk-width-2-5 uk-container-center">
+          <hr />
+          <h2>Please select your organizations on
+          the top and choose what repository and commit to deploy.
+          </h2>
+          </div>
+        </li>
+        <li id="available">
+          <div class="uk-grid">
+            <div class="uk-width-1-1">
+              <h1>Available Docs</h1>
+              {% if not docs_found %}
+              <h1>There are currently no documentation for any project</h1>
+              <p>Choose your ornanization above and create a hook for your project</p>
+              {% endif %}
+              {% for name, info in docs_found.items() %}
+              <div class="uk-container uk-text-large ">
+                <h2>{{ name }}</h2>
+
+                <table class="uk-table uk-text-large uk-table-hover uk-table-striped uk-table-condensed">
+                  <thead>
+                    <tr>
+                      <th>Generated file</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for filename in info.index %}
+                    <tr>
+                      <td>
+                        <a href="{{ full_url_for('static', filename="docs/{0}".format(filename)) }}">{{ filename }}</a>
+                      </td>
+                      <td>
+                        <a class="uk-button uk-button-primary" href="{{ full_url_for('static', filename="docs/{0}".format(filename)) }}">
+                          View
+                          <i class="uk-icon-eye-open uk-icon-medium"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                <hr />
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </li>
+
+        {% for org in organizations %}
+        <li id="pane-{{ org.login }}">
+          <div class="uk-grid uk-text-center ajax-loader {{ org.login }}">
+            <div class="uk-width-1-1">
+              <h1>loading...</h1>
+              <i class="uk-icon-time uk-icon-large uk-icon-spin"></i>
+            </div>
+          </div>
+          {% include "./dashboard/list-repositories.html" %}
+        </li {#id="list-repositories"#}>
+        {% endfor %}
+      </ul>
+    </article>
+  </div>
+</div>
+{% endblock %}
+
+{% block jsbottom %}
+  {{ super() }}
+  <script src="{{ url_for('static', v=settings.RELEASE, filename='js/d3.min.js') }}"></script>
+  <script src="{{ url_for('static', v=settings.RELEASE, filename='js/nvd3.min.js') }}"></script>
+  <script src="{{ url_for('static', v=settings.RELEASE, filename='js/controllers.dashboard.js') }}"></script>
+{% endblock %}
