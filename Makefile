@@ -93,4 +93,4 @@ workers:
 
 
 tail:
-	@ssh -t root@ec2-54-218-234-227.us-west-2.compute.amazonaws.com screen -c /srv/goloka/.screenrc
+	@ssh -t -i ~/.ssh/goloka-master.pem ubuntu@ec2-54-218-234-227.us-west-2.compute.amazonaws.com screen -c /srv/goloka/.screenrc
