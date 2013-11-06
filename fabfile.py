@@ -54,13 +54,6 @@ def deploy():
     run("/srv/venv/bin/pip uninstall -y -q curdling || echo")
     run("/srv/venv/bin/pip install -q curdling")
     run("/srv/venv/bin/curd -l DEBUG --log-name=curdling --log-file=/var/log/goloka/curdling.log install -r /srv/goloka/requirements.txt")
-    run("mkdir -p /srv/certificates")
-    sudo("chmod -R 755 /srv/certificates")
-
-    put(LOCAL_FILE('.conf', 'ssl.key.dec'), "/srv/certificates/ssl.key")
-    put(LOCAL_FILE('.conf', 'ssl.crt'), "/srv/certificates/ssl.crt")
-
-    run("chmod 400 /srv/certificates/*")
 
     put(LOCAL_FILE('.conf', 'supervisor.http.conf'), "/etc/supervisor/conf.d/goloka-http.conf")
     put(LOCAL_FILE('.conf', 'supervisor.ssl.conf'), "/etc/supervisor/conf.d/goloka-ssl.conf")
