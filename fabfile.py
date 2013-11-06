@@ -56,7 +56,7 @@ def deploy():
     run("/srv/venv/bin/curd -l DEBUG --log-name=curdling --log-file=/var/log/goloka/curdling.log install -r /srv/goloka/requirements.txt")
 
     put(LOCAL_FILE('.conf', 'supervisor.http.conf'), "/etc/supervisor/conf.d/goloka-http.conf")
-    put(LOCAL_FILE('.conf', 'supervisor.ssl.conf'), "/etc/supervisor/conf.d/goloka-ssl.conf")
+    put(LOCAL_FILE('.conf', 'supervisor.workers.conf'), "/etc/supervisor/conf.d/goloka-workers.conf")
 
     sudo("service supervisor stop")
     sudo("(ps aux | egrep supervisord | grep -v grep | awk '{ print $2 }' | xargs kill -9 2>&1>/dev/null) 2>&1>/dev/null || printf '\033[1;32mSupervisor is down\033[0m'")
