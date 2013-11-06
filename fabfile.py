@@ -31,14 +31,17 @@ def create():
     sudo("aptitude install -q=2 -y {0}".format(" ".join(dependencies)))
     sudo("test -e /srv && rm -rf /srv/")
     sudo("mkdir -p /srv/")
-    sudo("mkdir -p /var/log/goloka/supervisor")
     sudo("chown -R ubuntu.ubuntu /srv")
     sudo("chown -R ubuntu.ubuntu /var/log/goloka")
     sudo("chown -R ubuntu.ubuntu /etc/supervisor")
+    sudo("chmod -R 400 /srv")
+    sudo("chmod -R 400 /var/log/goloka")
+    sudo("chmod -R 400 /etc/supervisor")
 
 
 @runs_once
 def deploy():
+    now = datetime.now()
     release_path = '/srv/goloka'
     put(LOCAL_FILE('.conf', 'ssh', 'id_rsa*'), "~/.ssh/")
     run("chmod 600 ~/.ssh/id_rsa*")
@@ -48,6 +51,8 @@ def deploy():
     run("cd /srv/goloka && git clean -df")
     run("cd /srv/goloka && git pull")
     run("test -e /srv/venv || virtualenv --no-site-packages --clear /srv/venv")
+    run(now.strftime("mkdir -p /var/log/goloka/%Y-%m-%d"))
+    run(now.strftime("mv -f /var/log/goloka/supervisor/*.log /var/log/goloka/%Y-%m-%d/"))
 
     put(LOCAL_FILE('.conf', 'sitecustomize.py.template'), "/srv/venv/lib/python2.7/sitecustomize.py")
 
