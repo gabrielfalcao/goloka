@@ -58,7 +58,3 @@ REDIS_URI = env.get_uri("REDIS_URI")
 AUTH_USER = env.get("AUTH_USER", "")
 AUTH_PASSWD = env.get("AUTH_PASSWD", "")
 absurl = lambda *path: "{0}{1}/{2}".format(SCHEMA, DOMAIN, "/".join(path).lstrip('/'))
-
-
-SSH_PUBLIC_KEY_PATH = expanduser("~/.ssh/id_rsa.pub")
-SSH_PUBLIC_KEY = open(SSH_PUBLIC_KEY_PATH).read()
