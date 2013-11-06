@@ -67,12 +67,6 @@ migrate-forward:
 local-migrate-back:
 	@alembic downgrade -1
 
-production-dump.sql:
-	@printf "Getting production dump... "
-	@mysqldump -u gbookmarks --password='b00k@BABY' -h mysql.gabrielfalcao.com goloka_io_prod > production-dump.sql
-	@echo "OK"
-	@echo "Saved at production-dump.sql"
-
 deploy:
 	@fab -i ~/.ssh/goloka-master.pem -u ubuntu -H ec2-54-218-234-227.us-west-2.compute.amazonaws.com deploy
 

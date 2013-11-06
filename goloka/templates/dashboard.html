@@ -37,48 +37,6 @@
           </h2>
           </div>
         </li>
-        <li id="available">
-          <div class="uk-grid">
-            <div class="uk-width-1-1">
-              <h1>Available Docs</h1>
-              {% if not docs_found %}
-              <h1>There are currently no documentation for any project</h1>
-              <p>Choose your ornanization above and create a hook for your project</p>
-              {% endif %}
-              {% for name, info in docs_found.items() %}
-              <div class="uk-container uk-text-large ">
-                <h2>{{ name }}</h2>
-
-                <table class="uk-table uk-text-large uk-table-hover uk-table-striped uk-table-condensed">
-                  <thead>
-                    <tr>
-                      <th>Generated file</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for filename in info.index %}
-                    <tr>
-                      <td>
-                        <a href="{{ full_url_for('static', filename="docs/{0}".format(filename)) }}">{{ filename }}</a>
-                      </td>
-                      <td>
-                        <a class="uk-button uk-button-primary" href="{{ full_url_for('static', filename="docs/{0}".format(filename)) }}">
-                          View
-                          <i class="uk-icon-eye-open uk-icon-medium"></i>
-                        </a>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-                <hr />
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-        </li>
-
         {% for org in organizations %}
         <li id="pane-{{ org.login }}">
           <div class="uk-grid uk-text-center ajax-loader {{ org.login }}">
