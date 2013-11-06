@@ -8,7 +8,6 @@
     {% block csshead %}
     <link href="{{ url_for('static', v=settings.RELEASE, filename='css/jackedup.css') }}" rel="stylesheet" />
     <link href="{{ url_for('static', v=settings.RELEASE, filename='css/uikit.min.css') }}" rel="stylesheet" />
-    <link href="{{ url_for('static', v=settings.RELEASE, filename='css/simple-map-d3.css') }}" rel="stylesheet" />
     <link href="{{ url_for('static', v=settings.RELEASE, filename='css/style.css') }}" rel="stylesheet" />
     {% endblock %}
     {% block jshead %}
@@ -55,7 +54,7 @@ Goloka</a>
 	    <li><a href="http://github.com/gabrielfalcao">Github</a></li>
 	    <li><a href="http://twitter.com/gabrielfalcao">Twitter</a></li>
             {% if settings and settings.PRODUCTION %}
-            <li><img src="https://instanc.es/bin/gabrielfalcao/dop.png" width="95" height="18" /></li>
+            <li><img src="https://instanc.es/bin/gabrielfalcao/go-horse.png" width="95" height="18" /></li>
             {% endif %}
 	  </ul>
 	  <div class="uk-panel">

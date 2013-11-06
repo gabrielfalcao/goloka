@@ -10,37 +10,46 @@ var APP = angular.module('goloka', []).
         }
     });;
 
+
 $(function(){
+
+    function url_for(name, formatting) {
+        var URLS = {
+            "context_url": $("#dashboard-meta").data("context-ajax-url"),
+            "create_hook_url": $("#dashboard-meta").data("create-hook-ajax-url"),
+            "show_repository_commits": $("#dashboard-meta").data("show-repo-commits-url")
+        };
+
+        var url = URLS[name];
+        if (typeof formatting  === 'object')
+        for (var key in formatting) {
+            var pattern = encodeURIComponent('<' + key + '>');
+            var replacement = formatting[key];
+            url = url.replace(pattern, replacement);
+        }
+
+        return url;
+    };
+
     var ADDRESS = $("body").data("socketaddress");
     var username = $("#socket-meta").data("username");
-    var create_hook_ajax_url = $("#dashboard-meta").data("create-hook-ajax-url");
-    var context_ajax_url = $("#dashboard-meta").data("context-ajax-url");
-    var modal_tracking_ajax_url = $("#dashboard-meta").data("modal-tracking-url");
-    function get_modal_url(repository) {
-        return modal_tracking_ajax_url.replace(username + "-PLACEHOLDER", repository.name)
-    }
-    function get_context_ajax_url(owner_name) {
-        return context_ajax_url.replace("PLACEHOLDER", owner_name);
-    }
 
     var socket = io.connect(ADDRESS);
     var scope = angular.element($("body")).scope();
-    function make_loader(icon_name){
-        return '<div class="uk-grid uk-text-center modal-loader"><div class="uk-width-1-1 " style="padding-top: 200px;%"><h2>loading...</h2><i class="uk-icon-'+icon_name+' uk-icon-large uk-icon-spin"></i></div></div>';
-    }
 
-    function SelectOrganizationTab (organization) {
-        $.getJSON(get_context_ajax_url(organization), function(data){
+    function SelectOrganizationTab (owner) {
+        $.getJSON(url_for("context_url", {"owner": owner}), function(data){
             scope.$apply(function(){
-                scope.repositories[organization] = data.repositories;
-                scope.repositories_by_name[organization] = data.repositories_by_name;
-                console.log(scope.repositories);
-                $(".ajax-loader."+organization).hide();
+                scope.current_organization = owner;
+                scope.repositories[owner] = data.repositories;
+                scope.repositories_by_name[owner] = data.repositories_by_name;
+
+                $(".ajax-loader."+owner).hide();
             });
         });
     };
     function CreateHook (repository) {
-        $.post(create_hook_ajax_url, {
+        $.post(url_for("create_hook_url"), {
             "repository": repository,
             "username": username
         }, function(data){
@@ -58,14 +67,22 @@ $(function(){
             });
         });
     };
+    function ShowCommits (organization, repository) {
+        $.getJSON(url_for("show_repository_commits", {"owner": organization, "name": repository.name}), {
+            "repository": repository,
+            "username": username
+        }, function(data){
+            humane.log(data.message);
+        });
+    };
     scope.$apply(function(){
         scope.repositories = {};
         scope.repositories_by_name = {};
-
-        scope.current_project = false;
+        scope.current_organization = false;
         scope.username = username;
         scope.SelectOrganizationTab = SelectOrganizationTab;
         scope.CreateHook = CreateHook;
+        scope.ShowCommits = ShowCommits;
     });
     socket.on('connect', function() {
         console.log('connected');
@@ -96,5 +113,5 @@ $(function(){
 });
 
 APP.controller("DashboardController", function($scope){
-
+    $scope.current_organization = false;
 });

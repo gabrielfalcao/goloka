@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import sys
 from goloka.app import App
 from goloka import settings
 from socketio import socketio_manage
@@ -13,6 +13,7 @@ class SocketIOApp(object):
 
     def __call__(self, environ, start_response):
         from goloka.websockets import NAMESPACES
+
         if environ['PATH_INFO'].startswith('/socket.io'):
             socketio_manage(environ, NAMESPACES)
             return

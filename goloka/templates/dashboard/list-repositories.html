@@ -12,7 +12,13 @@
       {% raw %}
       <td>{{ repository.name }}</td>
       <td class="row" data-full-name="{{ repository.full_name }}" >
-        <button type="button" ng-show="repository.not_ready" class="uk-button uk-button-success" ng-click="CreateHook(repository)">Create Hook</button>
+        <button type="button" ng-show="repository.not_ready" class="uk-button uk-button-success" ng-click="CreateHook(repository)">
+          <i class="uk-icon-bullhorn"></i>
+Create Hook</button>
+        <button type="button" class="uk-button uk-button-primary" ng-click="ShowCommits(current_organization, repository)">
+          <i class="uk-icon-code-fork"></i>
+
+Choose a commit to deploy</button>
         <code ng-show="repository.ready" ng-if="repository.ready">{{ repository.ready.url }}</code>
       </td>
       {% endraw %}

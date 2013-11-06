@@ -117,6 +117,18 @@ def email():
     return render_template('email/thankyou.html')
 
 
+@mod.route("/bin/dashboard/show-commits/<owner>/<name>.json")
+@requires_login
+def ajax_show_commits(owner, name):
+    token = session['github_token']
+    print "owner", owner
+    print "name", name
+    return json_response({
+        'token': token,
+        'message': 'Now we just need to retrieve commits from {0}/{1}'.format(owner, name),
+    })
+
+
 @mod.route("/bin/dashboard/repo-list/<owner>.json")
 @requires_login
 def ajax_dashboard_repo_list(owner):
@@ -245,5 +257,5 @@ def github_callback(token):
     g.user = User.get_or_create_from_github_user(github_user_data)
     session['github_user_data'] = github_user_data
     gh_user = GithubUser.from_token(token)
-    gh_user.install_ssh_key("goloka", settings.SSH_PUBLIC_KEY)
+
     return redirect(next_url)

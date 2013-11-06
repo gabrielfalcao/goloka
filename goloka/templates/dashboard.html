@@ -16,7 +16,8 @@
 <object id="dashboard-meta"
         project="{login}-PLACEHOLDER".format(**github_user)) }}"
         data-create-hook-ajax-url="{{ url_for(".create_hook") }}"
-        data-context-ajax-url="{{ url_for(".ajax_dashboard_repo_list", owner="PLACEHOLDER") }}"></object>
+        data-show-repo-commits-url="{{ url_for(".ajax_show_commits", owner="<owner>", name="<name>") }}"
+        data-context-ajax-url="{{ url_for(".ajax_dashboard_repo_list", owner="<owner>") }}"></object>
 
 <div class="main uk-grid">
   <div class="uk-width-1-1">
@@ -42,7 +43,7 @@
           <div class="uk-grid uk-text-center ajax-loader {{ org.login }}">
             <div class="uk-width-1-1">
               <h1>loading...</h1>
-              <i class="uk-icon-time uk-icon-large uk-icon-spin"></i>
+              <i class="uk-icon-cog uk-icon-large uk-icon-spin"></i>
             </div>
           </div>
           {% include "./dashboard/list-repositories.html" %}
@@ -56,7 +57,5 @@
 
 {% block jsbottom %}
   {{ super() }}
-  <script src="{{ url_for('static', v=settings.RELEASE, filename='js/d3.min.js') }}"></script>
-  <script src="{{ url_for('static', v=settings.RELEASE, filename='js/nvd3.min.js') }}"></script>
   <script src="{{ url_for('static', v=settings.RELEASE, filename='js/controllers.dashboard.js') }}"></script>
 {% endblock %}
