@@ -74,10 +74,13 @@ production-dump.sql:
 	@echo "Saved at production-dump.sql"
 
 deploy:
-	@fab -u root -H ec2-54-218-234-227.us-west-2.compute.amazonaws.com deploy
+	@fab -i ~/.ssh/goloka-master.pem -u ubuntu -H ec2-54-218-234-227.us-west-2.compute.amazonaws.com deploy
+
+ssh:
+	@ssh -i ~/.ssh/goloka-master.pem ubuntu@ec2-54-218-234-227.us-west-2.compute.amazonaws.com
 
 create-machine:
-	@fab -u root -H ec2-54-218-234-227.us-west-2.compute.amazonaws.com create
+	@fab -i ~/.ssh/goloka-master.pem -u ubuntu -H ec2-54-218-234-227.us-west-2.compute.amazonaws.com create
 
 full-deploy: create-machine deploy
 
@@ -88,11 +91,6 @@ sync:
 workers:
 	@python goloka/bin.py workers
 
-enqueue-test:
-	@python goloka/bin.py enqueue
-
-redis-dump:
-	@scp root@ec2-54-218-234-227.us-west-2.compute.amazonaws.com:/var/lib/redis/*  /usr/local/var/db/redis/
 
 tail:
 	@ssh -t root@ec2-54-218-234-227.us-west-2.compute.amazonaws.com screen -c /srv/goloka/.screenrc

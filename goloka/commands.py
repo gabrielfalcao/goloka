@@ -12,26 +12,6 @@ from flask.ext.script import Command, Option
 from redis import StrictRedis
 
 LOGO = """
-Y88b   d88P d8b              d8b   888
- Y88b d88P  Y8P              Y8P   888
-  Y88o88P                          888
-   Y888P    888   88888b.    888   888888
-    888     888   888 '88b   888   888
-    888     888   888  888   888   888
-    888     888   888 d88P   888   Y88b.
-    888     888   88888P'    888    'Y888
-                  888
-                  888
-                  888
-
-            8888888b.
-            888  'Y88b
-            888    888
-            888    888 .d88b.  .d8888b.d8888b
-            888    888d88''88bd88P'   88K
-            888    888888  888888     'Y8888b.
-            888  .d88PY88..88PY88b.        X88
-            8888888P'  'Y88P'  'Y8888P 88888P'
 """
 
 class RunWorkers(Command):
@@ -107,7 +87,6 @@ class Check(Command):
             raise SystemExit(3)
 
 def init_command_manager(manager):
-    manager.add_command('enqueue', EnqueueProject())
     manager.add_command('check', Check())
     manager.add_command('workers', RunWorkers())
     return manager

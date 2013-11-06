@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import commands
 from datetime import datetime
 from os.path import dirname, abspath, join
-from fabric.api import run, runs_once, put
+from fabric.api import run, runs_once, put, sudo
 
 LOCAL_FILE = lambda *path: join(abspath(dirname(__file__)), *path)
 
@@ -12,30 +12,29 @@ SOURCECODE_PATH = LOCAL_FILE('*')
 
 @runs_once
 def create():
-    now = datetime.now()
-    run("apt-get -q=2 update")
+    sudo("apt-get -q=2 update")
     dependencies = [
         'git-core',
         'python-pip',
         'supervisor',
+        'redis-server',
         'python-dev',
         'libmysqlclient-dev',
         'mysql-client',
-        'redis-server',
         'libxml2-dev',
         'libxslt1-dev',
         'libevent-dev',
         'libev-dev',
         'virtualenvwrapper',
     ]
-    run("apt-get install -q=2 -y aptitude")
-    run("aptitude install -q=2 -y {0}".format(" ".join(dependencies)))
-    run("test -e /srv && rm -rf /srv/")
-    run("mkdir -p /srv/static")
-    run(now.strftime("cp -rfv /var/log/supervisor /var/backups/supervisor-%Y-%m-%d"))
-    run("rm -rf /var/log/supervisor")
-    run("mkdir -p /var/log/supervisor")
-    run("rm -rf ~/.curds")
+    sudo("apt-get install -q=2 -y aptitude")
+    sudo("aptitude install -q=2 -y {0}".format(" ".join(dependencies)))
+    sudo("test -e /srv && rm -rf /srv/")
+    sudo("mkdir -p /srv/")
+    sudo("mkdir -p /var/log/goloka/supervisor")
+    sudo("chown -R ubuntu.ubuntu /srv")
+    sudo("chown -R ubuntu.ubuntu /var/log/goloka")
+    sudo("chown -R ubuntu.ubuntu /etc/supervisor")
 
 
 @runs_once
@@ -48,18 +47,25 @@ def deploy():
     run("cd /srv/goloka && git reset --hard origin/master")
     run("cd /srv/goloka && git clean -df")
     run("cd /srv/goloka && git pull")
-
     run("test -e /srv/venv || virtualenv --no-site-packages --clear /srv/venv")
 
     put(LOCAL_FILE('.conf', 'sitecustomize.py.template'), "/srv/venv/lib/python2.7/sitecustomize.py")
 
-    run("/srv/venv/bin/pip install -U -q curdling")
-    run("/srv/venv/bin/curd -l DEBUG --log-name=curdling --log-file=/var/log/curdling.log install -r /srv/goloka/requirements.txt")
+    run("/srv/venv/bin/pip uninstall -y -q curdling || echo")
+    run("/srv/venv/bin/pip install -q curdling")
+    run("/srv/venv/bin/curd -l DEBUG --log-name=curdling --log-file=/var/log/goloka/curdling.log install -r /srv/goloka/requirements.txt")
+    run("mkdir -p /srv/certificates")
+    sudo("chmod -R 755 /srv/certificates")
+
+    put(LOCAL_FILE('.conf', 'ssl.key.dec'), "/srv/certificates/ssl.key")
+    put(LOCAL_FILE('.conf', 'ssl.crt'), "/srv/certificates/ssl.crt")
+
+    run("chmod 400 /srv/certificates/*")
 
     put(LOCAL_FILE('.conf', 'supervisor.http.conf'), "/etc/supervisor/conf.d/goloka-http.conf")
-    put(LOCAL_FILE('.conf', 'supervisor.workers.conf'), "/etc/supervisor/conf.d/goloka-workers.conf")
+    put(LOCAL_FILE('.conf', 'supervisor.ssl.conf'), "/etc/supervisor/conf.d/goloka-ssl.conf")
 
-    run("supervisorctl stop all")
-    run("service supervisor stop")
-    run("(ps aux | egrep python | grep -v grep | awk '{ print $2 }' | xargs kill -9 2>&1>/dev/null) 2>&1>/dev/null || printf '\033[0m'")
-    run("service supervisor start")
+    sudo("service supervisor stop")
+    sudo("(ps aux | egrep supervisord | grep -v grep | awk '{ print $2 }' | xargs kill -9 2>&1>/dev/null) 2>&1>/dev/null || printf '\033[1;32mSupervisor is down\033[0m'")
+    sudo("(ps aux | egrep gunicorn | grep -v grep | awk '{ print $2 }' | xargs kill -9 2>&1>/dev/null) 2>&1>/dev/null || printf '\033[1;32mGunicorn is down\033[0m'")
+    sudo("service supervisor start")
