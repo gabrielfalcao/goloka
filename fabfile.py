@@ -51,8 +51,8 @@ def deploy():
     run("cd /srv/goloka && git clean -df")
     run("cd /srv/goloka && git pull")
     run("test -e /srv/venv || virtualenv --no-site-packages --clear /srv/venv")
-    run(now.strftime("mkdir -p /var/log/goloka/%Y-%m-%d"))
-    run(now.strftime("mv -f /var/log/goloka/supervisor/*.log /var/log/goloka/%Y-%m-%d/"))
+    run(now.strftime("mkdir -p /var/log/goloka/%Y-%m-%d-%H:%M"))
+    sudo(now.strftime("mv -f /var/log/supervisor/*.log /var/log/goloka/%Y-%m-%d-%H:%M/"))
 
     put(LOCAL_FILE('.conf', 'sitecustomize.py.template'), "/srv/venv/lib/python2.7/sitecustomize.py")
 
