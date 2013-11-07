@@ -16,6 +16,10 @@ log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class EC2Worker(Worker):
+    def serialize_instance(self, instance):
+        types = (int, float, bool, type(None), str, unicode, dict, list, tuple, set)
+        return dict([(k, getattr(instance, k)) for k in dir(instance) if not k.startswith('_') and isinstance(getattr(instance, k), types)])
+
     def get_connection(self):
         from goloka import settings
         return ec2.connect_to_region(
@@ -24,10 +28,15 @@ class EC2Worker(Worker):
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         )
 
+    @property
+    def conn(self):
+        if not hasattr(self, '__conn'):
+            self.__conn = self.get_connection()
+
+        return self.__conn
     def get_slug_for_name(self, name):
         return re.sub(r'\W+', '-', name)
 
-class SecurityGroupCreator(EC2Worker):
     def get_name_and_description(self, instructions):
         environment_name = instructions['environment_name']
         repository_name = instructions['repository']['full_name']
@@ -36,17 +45,16 @@ class SecurityGroupCreator(EC2Worker):
         return name, description
 
     def get_security_group(self, name):
-        conn = self.get_connection()
-        existing_groups = dict([(g.name, g) for g in conn.get_all_security_groups()])
+        existing_groups = dict([(g.name, g) for g in self.conn.get_all_security_groups()])
 
         return existing_groups.get(name, None)
 
+class SecurityGroupCreator(EC2Worker):
     def get_or_create_security_group(self, name, description):
-        conn = self.get_connection()
 
         group = self.get_security_group(name)
         if not group:
-            group = conn.create_security_group(name, description)
+            group = self.conn.create_security_group(name, description)
 
         return group
 
@@ -60,14 +68,16 @@ class SecurityGroupCreator(EC2Worker):
                 ))
 
     def consume(self, instructions):
-        conn = self.get_connection()
         name, description = self.get_name_and_description(instructions)
 
         group = self.get_or_create_security_group(name, description)
 
+        group.add_tag(name)
         self.authorize_group(group, 'tcp', 80, 80, '0.0.0.0/0')
         self.authorize_group(group, 'tcp', 22, 22, '0.0.0.0/0')
         self.authorize_group(group, 'tcp', 443, 443, '0.0.0.0/0')
+
+        instructions['tag'] = name
 
         instructions['security_group'] = {
             'name': group.name,
@@ -96,7 +106,6 @@ class SecurityGroupCreator(EC2Worker):
         self.produce(instructions)
 
     def rollback(self, instructions):
-        conn = self.get_connection()
         name, description = self.get_name_and_description(instructions)
         group = self.get_security_group(name)
         if group and not group.instances():
@@ -104,36 +113,49 @@ class SecurityGroupCreator(EC2Worker):
 
 
 class InstanceCreator(EC2Worker):
-    def consume(self, instructions):
-        conn = self.get_connection()
+    def get_existing_instances(self, tag_name):
+        reservations = self.conn.get_all_instances()
+        result = []
+        for reservation in reservations:
+            for instance in reservation.instances:
+                if tag_name in instance.tags:
+                    result.append(instance)
 
-        image_id = instructions['instance']['image_id']
-        instance_type = instructions['instance']['instance_type']
-        disk_size_in_gb = int(instructions['instance']['disk_size'])
+        return result
 
+    def create_instances(self, image_id, instance_type, disk_size_in_gb, security_group):
         dev_sda1 = BlockDeviceType()
         dev_sda1.size = disk_size_in_gb
 
         bdm = BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
 
-        security_group = instructions['security_group']['name']
-        # ami-ace67f9c = Ubuntu Server 13.10 64bits
-        reservation = conn.run_instances(
+        reservation = self.conn.run_instances(
             image_id=image_id,
             instance_type=instance_type,
-            user_data=instructions['instance']['bootstrap_script'],
+            user_data=instructions['machine_specs']['bootstrap_script'],
             security_groups=[security_group],
             monitoring_enabled=True,
             block_device_map=bdm)
 
-        instance = reservation.instances[0]
-        sleep_time = 1
-        while instance.state != 'running':
-            print "Waiting for machine to run", instance.state
-            instance.update()
-            time.sleep(sleep_time)
-            sleep_time += 1.5
+        for instance in reservation.instances:
+            instance.add_tag(tag_name)
+
+        return reservation.instances
+
+    def consume(self, instructions):
+        tag_name = instructions['tag']
+        security_group = instructions['security_group']['name']
+
+        image_id = instructions['machine_specs']['image_id']
+        instance_type = instructions['machine_specs']['instance_type']
+        disk_size_in_gb = int(instructions['machine_specs']['disk_size'])
+
+        instances = self.get_existing_instances(tag_name)
+        if not instances:
+            instances = self.create_instances(image_id, instance_type, disk_size_in_gb, security_group)
+
+        instructions['instances'] = [self.serialize_instance(i) for i in instances]
         # wait until machine is running and finally produce
         self.produce(instructions)
 

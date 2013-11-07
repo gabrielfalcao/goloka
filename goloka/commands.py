@@ -69,7 +69,7 @@ class EnqueueProject(Command):
 
         build_queue.enqueue({
             'environment_name': 'Production',
-            'instance': {
+            'machine_specs': {
                 'image_id': 'ami-ad184ac4',
                 'instance_type': 't1.micro',
                 'disk_size': 10,
@@ -79,8 +79,8 @@ curl -i -H "Accept: application/json" -X POST -d "ip_address=$IPADDRESS" http://
                 '''
             },
             'repository': {
-                'name': 'yipit-client',
-                'full_name': 'Yipit/yipit-client',
+                'name': 'yipit_web',
+                'full_name': 'Yipit/yipit_web',
                 'owner': {
                     'name': 'Yipit',
                 }
