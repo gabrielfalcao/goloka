@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import json
+import sys
+import logging
 import traceback
 from pprint import pformat
 from threading import RLock, Thread
 from redis import StrictRedis
+
+log = logging.getLogger('goloka:workers')
+log.setLevel(logging.INFO)
+log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class Heart(object):
@@ -32,6 +39,9 @@ class Worker(Thread):
         self.heart = Heart()
         self.daemon = True
 
+    def __str__(self):
+        return '<{0}>'.format(self.__class__.__name__)
+
     def log(self, message, *args):
         redis = StrictRedis()
         msg = message % args
@@ -45,16 +55,25 @@ class Worker(Thread):
         return self.produce_queue.put(payload)
 
     def before_consume(self):
-        pass
-
+        print self, "is about to consume its queue"
 
     def after_consume(self, instructions):
-        pass
+        print self, "is done"
+
+
+    def do_rollback(self, instructions):
+        try:
+            self.rollback(instructions)
+        except Exception as e:
+            error = traceback.format_exc(e)
+            self.log(error)
 
     def run(self):
         while self.heart.is_beating():
             self.before_consume()
             instructions = self.consume_queue.get()
+            if not instructions or 'error' in instructions:
+                sys.exit(1)
             try:
                 self.consume(instructions)
             except Exception as e:
@@ -64,6 +83,7 @@ class Worker(Thread):
                     'success': False,
                     'error': error
                 })
+                self.do_rollback(instructions)
                 continue
 
             self.after_consume(instructions)

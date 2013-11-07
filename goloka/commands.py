@@ -12,62 +12,81 @@ from flask.ext.script import Command, Option
 from redis import StrictRedis
 
 LOGO = """
+                  dP          dP
+                  88          88
+.d8888b. .d8888b. 88 .d8888b. 88  .dP  .d8888b.
+88'  `88 88'  `88 88 88'  `88 88888'   88'  `88
+88.  .88 88.  .88 88 88.  .88 88  `8b. 88.  .88
+`8888P88 `88888P' dP `88888P' dP   `YP `88888P8
+     .88
+ d8888P
 """
+
 
 class RunWorkers(Command):
     def run(self):
         redis = StrictRedis()
-        from goloka.workers.manager import Manager
-        workers = Manager()
+        from goloka.workers.manager import MachineCreators
+        from goloka.queues import build_queue
+
+        workers = MachineCreators()
         workers.start()
-        print "Waiting for a build..."
 
         while True:
-            next_build_raw = redis.lpop("yipidocs:builds")
-            if not next_build_raw:
-                time.sleep(3)
-                continue
-
-            next_build = json.loads(next_build_raw)
-
+            print "Waiting for a build..."
+            next_build = build_queue.get_next()
             workers.enqueue_build(next_build)
-            payload = workers.to_notify_when_ready.get()
+            payload = workers.wait_and_get_work()
             if 'error' in payload:
                 sys.stderr.write(payload['error'])
                 continue
 
-            repository = payload['repository']
-            owner = repository['owner']['name']
-            serialized_payload = json.dumps(payload)
-            full_name = "{owner[name]}/{name}".format(**repository)
-            redis.hset("goloka:ready", full_name, serialized_payload)
-            redis.rpush("goloka:notifications", json.dumps({
-                'message': 'Documentation ready: {0}'.format(full_name)
-            }))
-            print "Waiting for a build..."
+            print "Finished deploy:", payload
 
 
 class EnqueueProject(Command):
     def run(self):
-        from goloka.models import User
-        from goloka import db
-        redis = StrictRedis()
-        users = User.using(db.engine).all()
-        if not users:
-            print "Run the server and log in with github, I need a real user token to test this..."
-            raise SystemExit(1)
-        user = users[0]
+        from goloka.queues import build_queue
 
-        redis.rpush("yipidocs:builds", json.dumps({
-            'token': user.github_token,
-            'clone_path': '/tmp/YIPIT_DOCS',
+        # * t1.micro
+        # * m1.small
+        # * m1.medium
+        # * m1.large
+        # * m1.xlarge
+        # * m3.xlarge
+        # * m3.2xlarge
+        # * c1.medium
+        # * c1.xlarge
+        # * m2.xlarge
+        # * m2.2xlarge
+        # * m2.4xlarge
+        # * cr1.8xlarge
+        # * hi1.4xlarge
+        # * hs1.8xlarge
+        # * cc1.4xlarge
+        # * cg1.4xlarge
+        # * cc2.8xlarge
+
+        build_queue.enqueue({
+            'environment_name': 'Production',
+            'instance': {
+                'image_id': 'ami-ad184ac4',
+                'instance_type': 't1.micro',
+                'disk_size': 10,
+                'bootstrap_script': '''#!/bin/bash
+export IPADDRESS=`ifconfig eth0 | egrep "inet addr" | sed "s,[^0-9]*[:],," | sed "s, .*$,,g"`
+curl -i -H "Accept: application/json" -X POST -d "ip_address=$IPADDRESS" http://ec2-54-218-234-227.us-west-2.compute.amazonaws.com/bin/ready
+                '''
+            },
             'repository': {
                 'name': 'yipit-client',
+                'full_name': 'Yipit/yipit-client',
                 'owner': {
                     'name': 'Yipit',
                 }
             }
-        }))
+        })
+
 
 class Check(Command):
     def run(self):
@@ -89,4 +108,5 @@ class Check(Command):
 def init_command_manager(manager):
     manager.add_command('check', Check())
     manager.add_command('workers', RunWorkers())
+    manager.add_command('enqueue', EnqueueProject())
     return manager

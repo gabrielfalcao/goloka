@@ -208,3 +208,7 @@ class GithubRepository(Resource):
         path = '/repos/{0}/{1}'.format(owner, project)
         response = self.endpoint.retrieve(path)
         return json.loads(response['response_data'])
+
+    def get_commits(self, owner, project):
+        path = '/repos/{0}/{1}/commits'.format(owner, project)
+        return self.get_path_recursively(path)

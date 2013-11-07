@@ -61,3 +61,7 @@ absurl = lambda *path: "{0}{1}/{2}".format(SCHEMA, DOMAIN, "/".join(path).lstrip
 
 SSH_PUBLIC_KEY_PATH = LOCAL_FILE("..", ".conf", "ssh", "id_rsa.pub")
 SSH_PUBLIC_KEY = open(SSH_PUBLIC_KEY_PATH).read()
+
+AWS_ACCESS_KEY_ID="AKIAIXVW4NHYZUSUQAHQ"
+AWS_SECRET_ACCESS_KEY="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"
+AWS_DEFAULT_REGION="us-east-1"

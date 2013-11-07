@@ -29,6 +29,8 @@ from goloka import db
 from redis import Redis
 from markment.fs import Node
 from redis import StrictRedis
+from goloka.queues import build_queue
+
 mod = Blueprint('views', __name__)
 
 
@@ -121,11 +123,13 @@ def email():
 @requires_login
 def ajax_show_commits(owner, name):
     token = session['github_token']
-    print "owner", owner
-    print "name", name
+    api = GithubRepository.from_token(token)
+    repository = api.get(owner, name)
+    commits = api.get_commits(owner, name)
     return json_response({
         'token': token,
-        'message': 'Now we just need to retrieve commits from {0}/{1}'.format(owner, name),
+        'repository': repository,
+        'commits': commits,
     })
 
 
@@ -188,18 +192,26 @@ def webhook(owner, repository, md_token):
         logger.warning("token not found %s for %s/%s", md_token, owner, repository)
 
         return error_json_response("token not found", 404)
+
     try:
         instructions = json.loads(request.form['payload'])
 
         instructions['token'] = user.github_token
         instructions['clone_path'] = '/tmp/YIPIT_DOCS'
+        build_queue.enqueue(instructions)
 
-        redis = StrictRedis()
-        redis.rpush("yipidocs:builds", json.dumps(instructions))
     except Exception as e:
         traceback.print_exc(e)
 
     return json_response({'cool': True})
+
+
+@mod.route('/bin/ready', methods=["POST", "PUT"])
+def report_machine_ready():
+    logger.info("A machine just reported it's working")
+    print "A machine just reported it's working"
+    print request.form
+    return json_response({'thankyou': True})
 
 
 @mod.route("/robots.txt")
