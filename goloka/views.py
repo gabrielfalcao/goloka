@@ -287,9 +287,6 @@ def ajax_save_build(owner, repository):
     token = session['github_token']
     user = User.using(db.engine).find_one_by(github_token=token)
 
-    if not request.json:
-        return error_json_response('Invalid form data, it did not arrive as JSON')
-
     repository = request.json['repository']
     environment_name = request.json['environment_name']
     instance_type = request.json['instance_type']
