@@ -36,3 +36,5 @@ markment
 production-dump.sql
 MANIFEST
 goloka/static/docs
+goloka/.gpg-keys/*.*
+goloka/.gpg-keys/random_seed

@@ -10,7 +10,7 @@ from sure import scenario, action_for
 
 from goloka.app import app
 from goloka.models import User, metadata, engine
-
+from redis import StrictRedis
 HTTPRETY_METHODS = [
     httpretty.GET,
     httpretty.POST,
@@ -56,9 +56,11 @@ def prepare(context):
 
     context.User = FakeUser
 
+def prepare_redis(context):
+    context.redis = StrictRedis()
+    context.redis.flushall()
 
 db_test = scenario([prepare])
-
 
 def create_user(context):
     data = {
@@ -70,28 +72,5 @@ def create_user(context):
     }
     context.user = User.using(engine).create(**data)
 
-
-def create_n_users(number):
-    total = number
-
-    def save_users(context):
-        context.users = []
-        for i in range(1, total + 1):
-            data = {}
-            data['username'] = "login{0}".format(i)
-            data['github_id'] = 42 + i
-            data['email'] = 'user{0}@gmail.com'.format(i)
-            data['github_token'] = str(i) * 10
-            data['gravatar_id'] = str(i) * 10
-
-            user = User.create(**data)
-
-            setattr(context, 'user{0}'.format(i), user)
-            context.users.append(user)
-
-    return save_users
-
-
-
-
 user_test = scenario([prepare, create_user])
+redis_test = scenario([prepare, create_user, prepare_redis])
