@@ -293,8 +293,8 @@ def ajax_save_build(owner, repository):
     repository = request.json['repository']
     environment_name = request.json['environment_name']
     instance_type = request.json['instance_type']
-    disk_size = request.json['disk_size']
-    script = request.json['script']
+    disk_size = request.json.get('disk_size', None) or '10'
+    script = request.json.get('script')
 
     my_build = Build.create(
         user,

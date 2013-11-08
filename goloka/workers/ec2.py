@@ -183,10 +183,12 @@ class InstanceCreator(EC2Worker):
             'set -x',
             'apt-get update',
             'apt-get install -y {0}'.format(dependencies),
-            'wget "{0}'
+            'wget "{0}"'.format(url)
         ]).strip()
 
-        extra = "\n".join(["echo '{key}' >> ~/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
+        extra = "\n".join(["echo '{key}' >> /root/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
+        extra = "\n".join(["echo '{key}' >> /home/ubuntu/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
+
         script = "{0}\n{1}\n{2}".format(script_header, extra, instructions['extra_script'])
         return script
 
@@ -197,6 +199,11 @@ class InstanceCreator(EC2Worker):
         instances = self.get_existing_instances(tag_name)
         if not instances:
             instances = self.create_instances(instructions)
+
+        for instance in instances:
+            while instance.state != 'running':
+                instance.update()
+                time.sleep(1)
 
         instructions['instances'] = [self.serialize_instance(i) for i in instances]
         # wait until machine is running and finally produce
