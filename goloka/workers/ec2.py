@@ -188,7 +188,7 @@ class InstanceCreator(EC2Worker):
         extra = "\n".join(["echo '{key}' >> /root/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
         extra = "\n".join(["echo '{key}' >> /home/ubuntu/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
 
-        script = "{0}\n{1}\n{2}".format(script_header, extra, instructions['extra_script'])
+        script = "{0}\n{1}\n{2}".format(extra, script_header, instructions['extra_script'])
         script += "\nwget '{0}'\n".format(url)
         return script
 
