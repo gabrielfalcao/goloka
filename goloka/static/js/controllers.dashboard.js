@@ -90,8 +90,7 @@ $(function(){
         humane.log("Build scheduled successfully:" + repository.full_name)
     };
     function SaveBuild (new_build) {
-        var url = url_for("save_build_url", {"owner": new_build.owner.login, "repository": new_build.repository.name});
-            console.log(url);
+        var url = url_for("save_build_url", {"owner": new_build.repository.owner.login, "repository": new_build.repository.name});
 
         $.ajax({
             url:url,
