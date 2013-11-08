@@ -43,11 +43,12 @@ class YipitDocsBroadcaster(Namespace, BroadcastMixin):
             gevent.sleep(30)
 
     def send_notifications(self):
-        log = redis.lpop("goloka:logs") or False
+        total = redis.llen("goloka:logs")
+        log = "<br />\n".join(redis.lrange("goloka:logs", 0, total))
         notification = redis.lpop("goloka:notifications") or False
         self.broadcast_event("notification", {
             'notification': notification and json.loads(notification),
-            'log': log and json.loads(log),
+            'log': log,
         })
 
 

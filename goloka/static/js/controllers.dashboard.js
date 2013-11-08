@@ -89,6 +89,10 @@ $(function(){
 
         humane.log("Build scheduled successfully:" + repository.full_name)
     };
+    function ShowLog () {
+        var modal = new $.UIkit.modal.Modal("#live-log-modal");
+        modal.show();
+    };
     function SaveBuild (new_build) {
         var url = url_for("save_build_url", {"owner": new_build.repository.owner.login, "repository": new_build.repository.name});
         console.log("will POST to", url)
@@ -116,6 +120,7 @@ $(function(){
         scope.SaveBuild = SaveBuild;
         scope.ManageBuilds = ManageBuilds;
         scope.ScheduleBuildNow = ScheduleBuildNow;
+        scope.ShowLog = ShowLog;
     });
     socket.on('connect', function() {
         console.log('connected');
@@ -125,10 +130,13 @@ $(function(){
         if (data.notification) {
             humane.log(data.notification.message)
         }
-        if (data.log) {
-            $("#console").prepend('<code>'+data.log.message+'</code>')
-        }
-        socket.emit('listen');
+
+        scope.$apply(function(){
+            scope.log = data.log;
+            console.log(data);
+            socket.emit('listen');
+        });
+
     });
     socket.on('error', function(e) {
         console.log('error', e);

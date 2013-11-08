@@ -48,7 +48,7 @@ class Worker(Thread):
         msg = message % args
         log.info(message, *args)
         if with_redis:
-            redis.rpush("goloka:logs", json.dumps({'message': msg}))
+            redis.rpush("goloka:logs", msg)
 
     def consume(self, instructions):
         raise NotImplemented("You must implement the consume method by yourself")

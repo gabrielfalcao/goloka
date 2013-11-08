@@ -27,6 +27,9 @@ Goloka</a>
           <ul class="uk-navbar-nav">
             {% if github_user %}
             <li>
+              <a href="" ng-click="ShowLog()"><i class="uk-icon-code"></i> Live build log</a>
+</li>
+            <li>
               <a href="#"><img src="{{ github_user.avatar_url }}" width="40" /> {{ github_user.login }}</a>
             </li>
             <li>
@@ -140,6 +143,15 @@ echo "YAY, I'm running!"
       <div class="uk-modal-dialog uk-modal-dialog-slide">
 	<a href="" class="uk-modal-close uk-close"></a>
         <div class="modal-content">
+        </div>
+      </div>
+    </div>
+    <div id="live-log-modal" class="uk-modal">
+      <div class="uk-modal-dialog uk-modal-dialog-slide">
+	<a href="" class="uk-modal-close uk-close"></a>
+        <div class="modal-content">
+          <h1>Live log</h1>
+          <pre style="width:100%;height: 100%;">{{ log }}</pre>
         </div>
       </div>
     </div>
