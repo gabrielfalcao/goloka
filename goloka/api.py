@@ -121,6 +121,8 @@ class GithubEndpoint(object):
 
         if not response:
             response = self.get_from_web(path, headers, data)
+            if not response:
+                return
             length = len(response['response_data'])
             if response and length < 1024 * 1024:
                 self.create_cache_object(response)
@@ -158,7 +160,11 @@ class Resource(object):
 
     def get_path_recursively(self, path):
         response = self.endpoint.retrieve(path)
-        value = json.loads(response['response_data'])
+        if not response:
+            return []
+
+        response_data = response['response_data']
+        value = json.loads(response_data)
         next_path = self.get_next_path(response)
         if next_path:
             value += self.get_path_recursively(next_path)
@@ -182,7 +188,7 @@ class GithubUser(Resource):
         orgs = instance.get_path_recursively('/user/orgs')
         user_info['organizations'] = [o for o in orgs if 'coderwall' not in o['login']]
 
-        keys = instance.get_path_recursively('/user/keys')
+        keys = instance.get_keys()
         user_info['keys'] = keys
         print keys
         return user_info
@@ -191,6 +197,9 @@ class GithubUser(Resource):
         path = '/users/{0}/starred'.format(username)
         response = self.endpoint.retrieve(path)
         return json.loads(response['response_data'])
+
+    def get_keys(self):
+        return self.get_path_recursively('/user/keys')
 
     def get_repositories(self, username):
         path = '/users/{0}/repos?sort=pushed'.format(username)

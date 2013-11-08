@@ -14,10 +14,14 @@ var APP = angular.module('goloka', []).
 $(function(){
 
     function url_for(name, formatting) {
+        var $src = $("#dashboard-meta");
         var URLS = {
-            "context_url": $("#dashboard-meta").data("context-ajax-url"),
-            "create_hook_url": $("#dashboard-meta").data("create-hook-ajax-url"),
-            "show_repository_commits": $("#dashboard-meta").data("show-repo-commits-url")
+            "context_url":             $src.data("context-ajax-url"),
+            "save_build_url":          $src.data("save-build-ajax-url"),
+            "run_build_url":           $src.data("run-build-ajax-url"),
+            "manage_builds_url":       $src.data("manage-builds-ajax-url"),
+            "create_hook_url":         $src.data("create-hook-ajax-url"),
+            "show_repository_commits": $src.data("show-repo-commits-url")
         };
 
         var url = URLS[name];
@@ -48,41 +52,70 @@ $(function(){
             });
         });
     };
-    function CreateHook (repository) {
-        $.post(url_for("create_hook_url"), {
-            "repository": repository,
-            "username": username
-        }, function(data){
-            scope.$apply(function(){
-                var selector = ".row";
-                $(selector).each(function(){
-                    var $el = $(this);
+    function CreateBuild (organization, repository) {
+        var modal = new $.UIkit.modal.Modal("#create-build-modal");
+        scope.current_project = repository;
+        scope.current_organization = organization;
+        scope.new_build = {
+            repository: repository,
+            owner: organization
+        };
 
-                    var full_name = $el.data("full-name");
-                    if (full_name === repository.full_name) {
-                        $el.text(data.url);
-                    }
-                });
+        modal.show();
+    };
+    function ManageBuilds (repository) {
+        var modal = new $.UIkit.modal.Modal("#manage-build-modal");
+        var url = url_for("manage_builds_url", {"owner": repository.owner.login, "repository": repository.name});
 
-            });
+        $.get(url, function(data){
+            $("#manage-build-modal .modal-content").html(data);
+            modal.show();
         });
     };
-    function ShowCommits (organization, repository) {
-        $.getJSON(url_for("show_repository_commits", {"owner": organization, "name": repository.name}), {
-            "repository": repository,
-            "username": username
-        }, function(data){
-            humane.log(data.message);
+    function ScheduleBuildNow (token) {
+        var url = url_for("run_build_url", {"token": token});
+        $.ajax({
+            url:url,
+            type:"POST",
+            data:JSON.stringify({
+                'token': token,
+            }),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function(data){
+                console.log("DONE WITH", data);
+            }
         });
+
+        humane.log("Build scheduled successfully:" + repository.full_name)
     };
+    function SaveBuild (new_build) {
+        var url = url_for("save_build_url", {"owner": new_build.owner.login, "repository": new_build.repository.name});
+            console.log(url);
+
+        $.ajax({
+            url:url,
+            type:"POST",
+            data:JSON.stringify(new_build),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function(data){
+                var modal = new $.UIkit.modal.Modal("#create-build-modal");
+                modal.hide();
+                humane.log("Created build " + data.environment_name);
+            }
+        });
+    }
     scope.$apply(function(){
         scope.repositories = {};
         scope.repositories_by_name = {};
         scope.current_organization = false;
         scope.username = username;
         scope.SelectOrganizationTab = SelectOrganizationTab;
-        scope.CreateHook = CreateHook;
-        scope.ShowCommits = ShowCommits;
+        scope.CreateBuild = CreateBuild;
+        scope.SaveBuild = SaveBuild;
+        scope.ManageBuilds = ManageBuilds;
+        scope.ScheduleBuildNow = ScheduleBuildNow;
     });
     socket.on('connect', function() {
         console.log('connected');
@@ -114,4 +147,6 @@ $(function(){
 
 APP.controller("DashboardController", function($scope){
     $scope.current_organization = false;
+    $scope.new_build = {};
+    $scope.builds = {};
 });

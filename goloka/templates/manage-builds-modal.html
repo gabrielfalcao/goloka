@@ -1,0 +1,23 @@
+<h1>Showing builds for {{ builds[0].repository.full_name }}</h1>
+
+{% for build in builds %}
+  <div class="uk-alert ">
+    <div class="uk-panel-badge uk-badge">{{ build.instance_type }}</div>
+    <h3 class="uk-panel-title">{{ build.environment_name }}</h3>
+
+    <p>
+      <h4>Public Key</h4>
+      <textarea class="code">{{ build.gpg_public_key }}</textarea>>
+    </p>
+    <p>
+      <h4>Repository</h4>
+      <textarea class="code">{{ build.repository.full_name }}</textarea>
+    </p>
+    <form method="POST" action="{{ url_for('.ajax_run_build', token=build.machine_token) }}">
+      <button type="submit" class="uk-button uk-button-large uk-text-large uk-button-danger">
+    </form>
+
+      <i class="uk-icon-cog uk-icon-large"></i>
+BUILD NOW</button>
+  </div>
+{% endfor %}

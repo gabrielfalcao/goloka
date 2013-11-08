@@ -38,6 +38,18 @@ def setup_httpretty():
         re.compile('github.com/repos/([^/]+)/([^/]+)/?$'),
         body=repository_callback)
 
+    httpretty.register_uri(
+        httpretty.GET,
+        re.compile('github.com/user/keys'),
+        body=json.dumps([
+          {
+            "id": 1,
+            "key": "ssh-rsa AAA...",
+            "url": "https://api.github.com/user/keys/1",
+            "title": "octocat@octomac"
+          }
+        ]))
+
 
 def prepare(context):
     setup_httpretty()

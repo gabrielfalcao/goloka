@@ -12,9 +12,10 @@
       {% raw %}
       <td>{{ repository.name }}</td>
       <td class="row" data-full-name="{{ repository.full_name }}" >
-        <button type="button" class="uk-button uk-button-success" ng-click="ShowCommits(current_organization, repository)">
+        <button type="button" class="uk-button uk-button-success" ng-click="CreateBuild(current_organization, repository)">
           Create build <i class="uk-icon-cog"></i></button>
-        <code ng-show="repository.ready" ng-if="repository.ready">{{ repository.ready.url }}</code>
+        <button type="button" class="uk-button uk-button-primary" ng-click="ManageBuilds(repository)">
+          Manage Builds <i class="uk-icon-coffee"></i></button>
       </td>
       {% endraw %}
     </tr>

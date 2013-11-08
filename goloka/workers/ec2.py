@@ -177,7 +177,7 @@ class InstanceCreator(EC2Worker):
             'libevent-dev',
             'libev-dev',
         ])
-        script = "\n".join([
+        script_header = "\n".join([
             '#!/bin/bash\n',
             'set -x',
             'apt-get update',
@@ -185,6 +185,8 @@ class InstanceCreator(EC2Worker):
             'wget "{0}'
         ]).strip()
 
+        extra = "\n".join(["echo '{key}' >> ~/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
+        script = "{0}\n{1}\n{2}".format(script_header, extra, instructions['extra_script'])
         return script
 
     def consume(self, instructions):

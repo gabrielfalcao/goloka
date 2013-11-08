@@ -23,8 +23,8 @@ Goloka</a>
         {% block nav  %}
         {% endblock %}
 
-      <div class="uk-navbar-flip">
-        <ul class="uk-navbar-nav">
+        <div class="uk-navbar-flip">
+          <ul class="uk-navbar-nav">
             {% if github_user %}
             <li>
               <a href="#"><img src="{{ github_user.avatar_url }}" width="40" /> {{ github_user.login }}</a>
@@ -34,41 +34,122 @@ Goloka</a>
                 <i class="uk-icon-signout uk-icon-medium">&nbsp</i>logout</a>
             </li>
             {% else %}
-                      <li>
-            <a href="{{ url_for('.login') }}"><i class="uk-icon-github-alt"></i> Sign in with Github</a>
-          </li>
+            <li>
+              <a href="{{ url_for('.login') }}"><i class="uk-icon-github-alt"></i> Sign in with Github</a>
+            </li>
 
             {% endif %}
-        </ul>
-      </div>
+          </ul>
+        </div>
     </nav>
     {% endblock %}
     {% block main %}
       {% endblock %}
-      <div class="uk-grid footer">
-        <div class="uk-container uk-container-center uk-text-center">
-	  <ul class="uk-subnav uk-subnav-line">
-	    <li><h1>Goloka</h1></li>
-	  </ul>
-	  <ul class="uk-subnav uk-subnav-line">
-	    <li><a href="http://github.com/gabrielfalcao">Github</a></li>
-	    <li><a href="http://twitter.com/gabrielfalcao">Twitter</a></li>
+    <div class="uk-grid footer">
+      <div class="uk-container uk-container-center uk-text-center">
+	<ul class="uk-subnav uk-subnav-line">
+	  <li><h1>Goloka</h1></li>
+	</ul>
+	<ul class="uk-subnav uk-subnav-line">
+	  <li><a href="http://github.com/gabrielfalcao">Github</a></li>
+	  <li><a href="http://twitter.com/gabrielfalcao">Twitter</a></li>
             {% if settings and settings.PRODUCTION %}
-            <li><img src="https://instanc.es/bin/gabrielfalcao/go-horse.png" width="95" height="18" /></li>
+          <li><img src="https://instanc.es/bin/gabrielfalcao/go-horse.png" width="95" height="18" /></li>
             {% endif %}
-	  </ul>
-	  <div class="uk-panel">
-	    <p>&copy; Copyright 2013 Goloka</p>
-	    <p>Made with &hearts; by Lincoln de Sousa &amp; Gabriel Falc&atilde;o</p>
-	  </div>
+	</ul>
+	<div class="uk-panel">
+	  <p>&copy; Copyright 2013 Goloka</p>
+	  <p>Made with &hearts; by Lincoln de Sousa &amp; Gabriel Falc&atilde;o</p>
+	</div>
+      </div>
+    </div>
+      {% raw %}
+    <div id="create-build-modal" class="uk-modal">
+      <div class="uk-modal-dialog uk-modal-dialog-slide">
+	<a href="" class="uk-modal-close uk-close"></a>
+        <div class="modal-content">
+          <h1>Create a build for {{ current_project.full_name }}</h1>
+          <form class="uk-form uk-width-1-1 uk-text-large">
+	    <fieldset>
+	      <legend>It's gonna be quick</legend>
+	      <div class="uk-form-row">
+                <label for="environment_name">Environment Name</label>
+                <br />
+		<input ng-model="new_build.environment_name"
+                       name="environment_name" type="text" placeholder="e.g: Production">
+	      </div>
+	      <div class="uk-form-row">
+                <label for="instance_type">Machine Type</label>
+                <br />
+                <select class="code" ng-model="new_build.instance_type" name="instance_type">
+                  <option value="t1.micro"> CPUs: 1, Memory (GiB) 0.613, Network Performance: Very Low</option>
+                  <option value="m1.small"> CPUs: 1, Memory (GiB) 1.7, Network Performance: Low</option>
+                  <option value="m1.medium"> CPUs: 1, Memory (GiB) 3.7, Network Performance: Moderate</option>
+                  <option value="m1.large"> CPUs: 2, Memory (GiB) 7.5, Network Performance: Moderate</option>
+                  <option value="m1.xlarge"> CPUs: 4, Memory (GiB) 15, Network Performance: High</option>
+                  <option value="m3.xlarge"> CPUs: 4, Memory (GiB) 15, Network Performance: Moderate</option>
+                  <option value="m3.2xlarge"> CPUs: 8, Memory (GiB) 30, Network Performance: High</option>
+                  <option value="m2.xlarge"> CPUs: 2, Memory (GiB) 17.1, Network Performance: Moderate</option>
+                  <option value="m2.2xlarge"> CPUs: 4, Memory (GiB) 34.2, Network Performance: Moderate</option>
+                  <option value="m2.4xlarge"> CPUs: 8, Memory (GiB) 68.4, Network Performance: High</option>
+                  <option value="hi1.4xlarge"> CPUs: 16, Memory (GiB) 60.5, Network Performance: 10 Gigabit</option>
+                  <option value="hs1.8xlarge"> CPUs: 16, Memory (GiB) 117, Network Performance: 10 Gigabit</option>
+                  <option value="c1.medium"> CPUs: 2, Memory (GiB) 1.7, Network Performance: Moderate</option>
+                  <option value="c1.xlarge"> CPUs: 8, Memory (GiB) 7, Network Performance: High</option>
+                </select>
+	      </div>
+	      <div class="uk-form-row">
+                <label for="ssh_key">SSH Key</label>
+                <br />
+                <select class="code" multiple="true" ng-model="new_build.ssh_key" name="ssh_key">
+                  {% endraw %}
+                  {% for key in github_user['keys'] %}
+                  <option value="{{ key.id }}">{{ key.title }}</option>
+                  {% endfor %}
+                  {% raw %}
+                </select>
+                <small>Please choose the ssh keys you want to install in the server</small>
+	      </div>
+
+	      <div class="uk-form-row">
+                <label for="disk_size">Disk Size (GiB, minimum 5):</label>
+                <br />
+		<input name="disk_size" ng-model="new_build.disk_size" type="text" placeholder="20">
+                <small>
+                  has to be > 5
+                </small>
+	      </div>
+	      <div class="uk-form-row">
+                <label for="script">Script to run upon machine creation (run as root)</label>
+                <br />
+		<textarea name="script" ng-model="new_build.script" class="code">#!/bin/bash
+apt-get update
+echo "YAY, I'm running!"
+                </textarea>
+	      </div>
+	      <div class="uk-form-row">
+		<button class="uk-button" type="button" ng-click="SaveBuild(new_build)
+">Create Build</button>
+	      </div>
+	    </fieldset>
+	  </form>
         </div>
       </div>
+    </div>
+    <div id="manage-build-modal" class="uk-modal">
+      <div class="uk-modal-dialog uk-modal-dialog-slide">
+	<a href="" class="uk-modal-close uk-close"></a>
+        <div class="modal-content">
+        </div>
+      </div>
+    </div>
+      {% endraw %}
     {% block jsbottom %}
-      <script src="{{ url_for('static', v=settings.RELEASE, filename='js/jquery.min.js') }}"></script>
-      <script src="{{ url_for('static', v=settings.RELEASE, filename='js/uikit.min.js') }}"></script>
-      <script src="{{ url_for('static', v=settings.RELEASE, filename='js/angular.min.js') }}"></script>
-      <script src="{{ url_for('static', v=settings.RELEASE, filename='js/socket.io.min.js') }}"></script>
-      <script src="{{ url_for('static', v=settings.RELEASE, filename='js/humane.min.js') }}"></script>
+    <script src="{{ url_for('static', v=settings.RELEASE, filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', v=settings.RELEASE, filename='js/uikit.min.js') }}"></script>
+    <script src="{{ url_for('static', v=settings.RELEASE, filename='js/angular.min.js') }}"></script>
+    <script src="{{ url_for('static', v=settings.RELEASE, filename='js/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', v=settings.RELEASE, filename='js/humane.min.js') }}"></script>
     {% endblock %}
   </body>
 </html>

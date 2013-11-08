@@ -56,3 +56,8 @@ def test_build_create(context):
     build_info_raw = context.redis.hget('goloka:Yipit/yipit_web:builds', 'Production')
     build_info = json.loads(build_info_raw)
     build_info.should.equal(my_build.to_redis_payload())
+
+
+    build_info_raw2 = context.redis.hget('goloka:builds-by-token', '68978e47c0841fcf9982aafd6dd150f0f5065991e38bca3cd34fc4b3651ce7ce457f7e4b7cd7a1b410fa82eb755776052c639fa8a9982c1d0e7c0586b87c87c6')
+    build_info2 = json.loads(build_info_raw2)
+    build_info2.should.equal(build_info)

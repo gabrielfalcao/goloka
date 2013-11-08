@@ -13,6 +13,7 @@ logger = logging.getLogger('goloka.models')
 from goloka.db import db, metadata, Model, engine
 from goloka import settings
 from redis import StrictRedis
+from goloka.queues import build_queue
 
 def slugify(string):
     return re.sub(r'\W+', '-', string.lower())
@@ -51,6 +52,9 @@ class User(Model):
 
     def list_repositories(self):
         return self.api.get_repositories(self.username)
+
+    def get_keys(self):
+        return self.api.get_keys()
 
     @classmethod
     def create_from_github_user(cls, data):
@@ -107,17 +111,20 @@ class OrganizationUsers(Model):
 key_smith = gnupg.GPG(gnupghome=settings.GNUPG_HOME)
 
 class Build(object):
-    def __init__(self, environment_name, instance_type, repository, gpg_fingerprint,
-                 image_id='ami-ad184ac4', disk_size=10, assets_path='/srv/static'):
+    def __init__(self, environment_name, instance_type, repository, gpg_fingerprint, keys,
+                 image_id='ami-ad184ac4', disk_size=10, assets_path='/srv/static', machine_token=None, extra_script=None):
         self.environment_name = environment_name
         self.repository = repository
         self.instance_type = instance_type
         self.image_id = image_id
         self.disk_size = disk_size
         self.assets_path = assets_path
+        self.keys = keys
         self.gpg_fingerprint = gpg_fingerprint
         self.gpg_public_key = key_smith.export_keys(gpg_fingerprint, False)
         self.gpg_private_key = key_smith.export_keys(gpg_fingerprint, True)
+        self.machine_token = machine_token or self.create_hash()
+        self.extra_script = extra_script or ''
 
     def create_hash(self):
         sha = hashlib.sha512()
@@ -125,6 +132,12 @@ class Build(object):
         sha.update(self.environment_name)
         sha.update(self.repository['full_name'])
         return sha.hexdigest()
+
+    def encrypt(self, data):
+        return key_smith.encrypt(data, [self.gpg_fingerprint])
+
+    def decrypt(self, data):
+        return key_smith.decrypt(data)
 
     @classmethod
     def generate_key(Build, name, author_email):
@@ -141,10 +154,49 @@ class Build(object):
     def save(self):
         redis = StrictRedis()
         key = 'goloka:{full_name}:builds'.format(**self.repository)
-        return redis.hset(key, self.environment_name, json.dumps(self.to_redis_payload()))
+        redis.hset(key, self.environment_name, json.dumps(self.to_redis_payload()))
+
+        key = 'goloka:builds-by-token'
+        redis.hset(key, self.machine_token, json.dumps(self.to_redis_payload()))
+
+    def run(self):
+        build_queue.enqueue(self.to_redis_payload())
 
     @classmethod
-    def create(Build, user, environment_name, instance_type, disk_size, repository):
+    def from_dict(Build, meta):
+        environment_name = meta['environment_name']
+        instance_type = meta['machine_specs']['instance_type']
+        image_id = meta['machine_specs']['image_id']
+        repository = meta['repository']
+        gpg_fingerprint = meta['gpg_fingerprint']
+        assets_path = meta['machine_specs']['assets_info']['path']
+        disk_size = meta['machine_specs']['disk_size']
+        machine_token = meta['machine_token']
+        ssh_keys = meta['ssh_keys']
+        return Build(environment_name, instance_type, repository, gpg_fingerprint, ssh_keys, image_id=image_id,
+                     disk_size=disk_size, assets_path=assets_path, machine_token=machine_token)
+
+    @classmethod
+    def get_by_token(Build, token):
+        redis = StrictRedis()
+        key = 'goloka:builds-by-token'
+        raw = redis.hget(key, token)
+        if raw:
+            return Build.from_dict(json.loads(raw))
+
+    @classmethod
+    def get_all_by_full_name(Build, full_name):
+        redis = StrictRedis()
+        key = 'goloka:{0}:builds'.format(full_name)
+        raw = redis.hgetall(key)
+        result = []
+        for environment_name, raw_build_dictionary in raw.items():
+            result.append((environment_name, Build.from_dict(json.loads(raw_build_dictionary))))
+
+        return dict(result)
+
+    @classmethod
+    def create(Build, user, environment_name, instance_type, disk_size, repository, script=None):
         """takes a User instance + keyword args:
         """
         key_name = ":".join([environment_name, repository['full_name']])
@@ -157,6 +209,8 @@ class Build(object):
             image_id='ami-ad184ac4',
             disk_size=disk_size,
             assets_path='/srv/static',
+            extra_script=script,
+            keys=user.get_keys(),
         )
         instance.save()
         return instance
@@ -164,7 +218,7 @@ class Build(object):
     def to_dict(self):
         return {
             'environment_name': self.environment_name,
-            'machine_token': self.create_hash(),
+            'machine_token': self.machine_token,
             'machine_specs': {
                 'image_id': 'ami-ad184ac4',
                 'instance_type': self.instance_type,
@@ -173,15 +227,11 @@ class Build(object):
                     'path': '/srv/static',
                 },
             },
-            'repository': {
-                'name': 'yipit_web',
-                'full_name': 'Yipit/yipit_web',
-                'owner': {
-                    'name': 'Yipit',
-                },
-            },
+            'repository': self.repository,
             'gpg_fingerprint': self.gpg_fingerprint,
             'gpg_public_key': self.gpg_public_key,
+            'ssh_keys': self.keys,
+            'extra_script': self.extra_script,
         }
 
     def to_redis_payload(self):

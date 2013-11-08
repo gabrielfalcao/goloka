@@ -23,7 +23,7 @@ from goloka import settings
 from goloka.api import GithubUser, GithubEndpoint, GithubRepository, GithubOrganization
 from goloka.handy.decorators import requires_login
 from goloka.handy.functions import user_is_authenticated
-from goloka.models import User
+from goloka.models import User, Build
 from goloka.log import logger
 from goloka import db
 from redis import Redis
@@ -118,6 +118,12 @@ def dashboard():
 def email():
     return render_template('email/thankyou.html')
 
+
+@mod.route("/build/<token>")
+@requires_login
+def show_build(token):
+    build = Build.get_by_token(token)
+    return render_template('build.html', build=build)
 
 @mod.route("/bin/dashboard/show-commits/<owner>/<name>.json")
 @requires_login
@@ -273,3 +279,49 @@ def github_callback(token):
     gh_user = GithubUser.from_token(token)
 
     return redirect(next_url)
+
+
+@mod.route("/bin/dashboard/save-build/<owner>/<repository>.json", methods=['POST'])
+@requires_login
+def ajax_save_build(owner, repository):
+    token = session['github_token']
+    user = User.using(db.engine).find_one_by(github_token=token)
+
+    if not request.json:
+        return error_json_response('Invalid form data, it did not arrive as JSON')
+
+    repository = request.json['repository']
+    environment_name = request.json['environment_name']
+    instance_type = request.json['instance_type']
+    disk_size = request.json['disk_size']
+    script = request.json['script']
+
+    my_build = Build.create(
+        user,
+        environment_name=environment_name,
+        instance_type=instance_type,
+        disk_size=disk_size,
+        repository=repository,
+        script=script,
+    )
+
+    return json_response(my_build.to_dict())
+
+
+@mod.route("/bin/dashboard/manage-builds/<owner>/<repository>.json")
+@requires_login
+def ajax_manage_builds(owner, repository):
+    full_name = "{0}/{1}".format(owner, repository)
+    builds = Build.get_all_by_full_name(full_name).values()
+    return render_template('manage-builds-modal.html', builds=builds)
+
+
+@mod.route("/bin/dashboard/run-build/<token>.json", methods=['POST'])
+@requires_login
+def ajax_run_build(token):
+    my_build = Build.get_by_token(token)
+    if my_build:
+        my_build.run()
+        return json_response(my_build.to_dict())
+
+    return error_json_response('no such build for token {0}'.format(token))
