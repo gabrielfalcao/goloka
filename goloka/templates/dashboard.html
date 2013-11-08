@@ -15,12 +15,12 @@
         data-username="{{ github_user.login }}"></object>
 <object id="dashboard-meta"
         project="{login}-PLACEHOLDER".format(**github_user)) }}"
-        data-create-hook-ajax-url="{{ url_for(".create_hook") }}"
-        data-run-build-ajax-url="{{ url_for(".ajax_run_build", token='<token>') }}"
-        data-save-build-ajax-url="{{ url_for(".ajax_save_build", owner="<owner>", repository="<repository>") }}"
-        data-manage-builds-ajax-url="{{ url_for(".ajax_manage_builds", owner="<owner>", repository="<repository>") }}"
-        data-show-repo-commits-url="{{ url_for(".ajax_show_commits", owner="<owner>", name="<name>") }}"
-        data-context-ajax-url="{{ url_for(".ajax_dashboard_repo_list", owner="<owner>") }}"></object>
+        data-create-hook-ajax-url="{{ full_url_for(".create_hook") }}"
+        data-run-build-ajax-url="{{ full_url_for(".ajax_run_build", token='<token>') }}"
+        data-save-build-ajax-url="{{ full_url_for(".ajax_save_build", owner="<owner>", repository="<repository>") }}"
+        data-manage-builds-ajax-url="{{ full_url_for(".ajax_manage_builds", owner="<owner>", repository="<repository>") }}"
+        data-show-repo-commits-url="{{ full_url_for(".ajax_show_commits", owner="<owner>", name="<name>") }}"
+        data-context-ajax-url="{{ full_url_for(".ajax_dashboard_repo_list", owner="<owner>") }}"></object>
 
 <div class="main uk-grid">
   <div class="uk-width-1-1">
