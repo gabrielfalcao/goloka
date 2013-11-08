@@ -179,12 +179,12 @@ class GithubUser(Resource):
             return {}
 
         user_info = json.loads(response['response_data'])
-        response2 = instance.endpoint.retrieve('/user/orgs', skip_cache=skip_cache)
-        if response2:
-            orgs = json.loads(response2['response_data'])
-            user_info['organizations'] = [o for o in orgs if 'coderwall' not in o['login']]
-        else:
-            logger.error("Failed to retrieve organizations for %s", str(user_info))
+        orgs = instance.get_path_recursively('/user/orgs')
+        user_info['organizations'] = [o for o in orgs if 'coderwall' not in o['login']]
+
+        keys = instance.get_path_recursively('/user/keys')
+        user_info['keys'] = keys
+        print keys
         return user_info
 
     def get_starred(self, username):
