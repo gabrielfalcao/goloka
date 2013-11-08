@@ -106,6 +106,7 @@ $(function(){
             success: function(data){
                 var modal = new $.UIkit.modal.Modal("#create-build-modal");
                 modal.hide();
+                $("#create-build-modal").hide();
                 humane.log("Created build " + data.environment_name);
             }
         });
