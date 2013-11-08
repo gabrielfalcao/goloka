@@ -93,7 +93,7 @@ class App(object):
     By subcomponents I mean the database access, the command interface,
     the static assets, etc.
     """
-    testing_mode = bool(os.getenv('YIPITDOCS_TESTING_MODE', False))
+    testing_mode = bool(os.getenv('GOLOKA_TESTING_MODE', False))
 
     def __init__(self, settings_path='goloka.settings'):
         self.web = Flask(__name__)
@@ -148,7 +148,7 @@ class App(object):
         """Return an instance of `App` fed with settings from the env.
         """
         smodule = os.environ.get(
-            'YIPITDOCS_SETTINGS_MODULE',
+            'GOLOKA_SETTINGS_MODULE',
             'goloka.settings'
         )
         return cls(smodule)

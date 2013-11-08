@@ -8,3 +8,5 @@ steadymark==0.4.5
 sure==1.2.2
 tox==1.4.3
 fabric
+httpretty==0.7.0
+rednose==0.4.1

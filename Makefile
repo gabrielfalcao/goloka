@@ -17,8 +17,8 @@ clean:
 
 test-kind:
 	@-echo 'create database if not exists goloka_test ' | mysql -uroot
-	@TESTING=true YIPITDOCS_DB=mysql://root@localhost/goloka_test YIPITDOCS_SETTINGS_MODULE="tests.settings" PYTHONPATH="$(PYTHONPATH)" \
-		nosetests --with-coverage --cover-package=goloka --nologcapture --logging-clear-handlers --stop --verbosity=2 -s tests/$(kind)
+	@TESTING=true GOLOKA_DB=mysql://root@localhost/goloka_test GOLOKA_SETTINGS_MODULE="tests.settings" PYTHONPATH="$(PYTHONPATH)" \
+		nosetests --rednose --with-coverage --cover-package=goloka --nologcapture --logging-clear-handlers --stop --verbosity=2 -s tests/$(kind)
 
 unit:
 	@make test-kind kind=unit

@@ -82,8 +82,6 @@ class User(Model):
 
         return instance
 
-
-
 class Organization(Model):
     table = db.Table('md_organization', metadata,
         db.Column('id', db.Integer, primary_key=True),
@@ -104,6 +102,7 @@ class OrganizationUsers(Model):
         db.Column('user_id', db.Integer, nullable=False),
         db.Column('organization_id', db.Integer, nullable=False),
     )
+
 
 
 # {

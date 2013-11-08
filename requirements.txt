@@ -20,3 +20,4 @@ gunicorn
 markment
 Github-Flask==0.3.4
 boto==2.15.0
+python-gnupg==0.3.5

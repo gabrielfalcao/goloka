@@ -20,7 +20,7 @@ DATABASE = env.get('MYSQL_URI')
 
 if not PRODUCTION:
     import os
-    DATABASE = env.get('YIPITDOCS_DB', 'mysql://root@localhost/goloka')
+    DATABASE = env.get('GOLOKA_DB', 'mysql://root@localhost/goloka')
 
 # Static assets craziness
 LOCAL_FILE = lambda *p: abspath(join(__file__, '..', *p))
