@@ -19,3 +19,4 @@ alembic==0.6.0
 gunicorn
 markment
 Github-Flask==0.3.4
+boto==2.15.0
