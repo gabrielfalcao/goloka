@@ -16,6 +16,7 @@ def create():
     dependencies = [
         'git-core',
         'python-pip',
+        'python-gnupg',
         'supervisor',
         'redis-server',
         'python-dev',

@@ -108,7 +108,7 @@ class OrganizationUsers(Model):
         db.Column('organization_id', db.Integer, nullable=False),
     )
 
-key_smith = gnupg.GPG(gnupghome=settings.GNUPG_HOME)
+key_smith = gnupg.GPG(gnupghome=settings.GNUPG_HOME, gpgbinary=settings.GPG_BIN)
 
 class Build(object):
     def __init__(self, environment_name, instance_type, repository, gpg_fingerprint, keys,

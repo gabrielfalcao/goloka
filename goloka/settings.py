@@ -33,13 +33,14 @@ if DEBUG:  # localhost
     GITHUB_CLIENT_ID = 'bae76639a0b0be1ba87f'
     GITHUB_CLIENT_SECRET = 'b48f447af184fdcd67e817769c4e309781f7ac6d'
     GIT_BIN_PATH = '/usr/local/bin/git'
-
+    GPG_BIN = 'gpg'
 else:
     HOST = env.get("HOST")
     DOMAIN = env.get("DOMAIN")
     GITHUB_CLIENT_ID = 'd92af7364bf699adae05'
     GITHUB_CLIENT_SECRET = '1287f5b134cb293a0fb39d39731ddf457b634702'
     GIT_BIN_PATH = '/usr/bin/git'
+    GPG_BIN = '/usr/bin/gpg'
 
 DOCUMENTATION_ROOT = LOCAL_FILE('static', 'docs')
 

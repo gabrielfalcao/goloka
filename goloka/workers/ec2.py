@@ -168,6 +168,7 @@ class InstanceCreator(EC2Worker):
         dependencies = " ".join([
             'git-core',
             'python-pip',
+            'python-gnupg',
             'supervisor',
             'python-dev',
             'libmysqlclient-dev',
