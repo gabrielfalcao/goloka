@@ -1,0 +1,26 @@
+{% for machine in machines %}
+  <div class="uk-alert ">
+    <h3 class="uk-panel-title">{{ machine.repository.full_name }}{{ build.environment_name }}</h3>
+    <p>
+      <h4>SSH Access</h4>
+      <textarea class="code">
+        ssh ubuntu@{{ machine['public_dns_name'] }}
+      </textarea>
+    </p>
+    <p>
+      <h4>Security Group</h4>
+      <textarea class="code">
+        {{ json.dumps(machine['security_group'], indent=2) }}
+      </textarea>
+    </p>
+    <p>
+      <h4>S3 Bucket</h4>
+      <h5>{{ machine['bucket']['name'] }}</h5>
+      <code>http://{{ machine['bucket']['domain'] }}</code>
+      <code>https://{{ machine['bucket']['domain'] }}</code>
+    </p>
+  </div>
+{% endfor %}
+{% if not machines %}
+<h1>There are no machines for {{ owner }}/{{ repository_name }}</h1>
+{% endif %}

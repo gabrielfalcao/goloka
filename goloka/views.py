@@ -217,7 +217,7 @@ def report_machine_ready(token):
     build = Build.get_by_token(token)
     msg = "The machine {0} just reported it's working for {1}".format(request.remote_addr, build.environment_name)
     print msg
-    return json_response(build.to_dict())
+    return json_response(build.to_dict)
 
 
 @mod.route("/robots.txt")
@@ -310,6 +310,13 @@ def ajax_manage_builds(owner, repository):
     full_name = "{0}/{1}".format(owner, repository)
     builds = Build.get_all_by_full_name(full_name).values()
     return render_template('manage-builds-modal.html', builds=builds)
+
+@mod.route("/bin/dashboard/manage-machines/<owner>/<repository>.json")
+@requires_login
+def ajax_manage_machines(owner, repository):
+    redis = StrictRedis()
+    machines = map(json.loads, redis.smembers("goloka:{repository[full_name]}:machines"))
+    return render_template('manage-machines-modal.html', machines=machines, owner=owner, repository_name=repository)
 
 
 @mod.route("/bin/dashboard/run-build/<token>.json", methods=['POST'])
