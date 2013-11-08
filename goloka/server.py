@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import sys
+import logging
 from goloka.app import App
 from goloka import settings
 from socketio import socketio_manage
 from socketio.server import SocketIOServer
+
+log = logging.getLogger('goloka:websockets')
+log.setLevel(logging.INFO)
+log.addHandler(logging.StreamHandler(sys.stderr))
 
 class SocketIOApp(object):
     def __init__(self, app):
@@ -14,6 +19,7 @@ class SocketIOApp(object):
     def __call__(self, environ, start_response):
         from goloka.websockets import NAMESPACES
 
+        log.info("Handling %s", environ['PATH_INFO'])
         if environ['PATH_INFO'].startswith('/socket.io'):
             socketio_manage(environ, NAMESPACES)
             return
