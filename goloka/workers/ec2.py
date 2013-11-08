@@ -9,6 +9,7 @@ from boto import ec2
 from boto.exception import EC2ResponseError
 from boto.ec2.blockdevicemapping import BlockDeviceMapping, BlockDeviceType
 from goloka.workers.base import Worker
+from goloka import settings
 
 log = logging.getLogger('goloka:workers:ec2')
 log.setLevel(logging.INFO)
@@ -118,22 +119,30 @@ class InstanceCreator(EC2Worker):
         result = []
         for reservation in reservations:
             for instance in reservation.instances:
-                if tag_name in instance.tags:
+                if tag_name in instance.tags and instance.state != 'terminated':
                     result.append(instance)
 
         return result
 
-    def create_instances(self, image_id, instance_type, disk_size_in_gb, security_group):
+    def create_instances(self, instructions):
+        tag_name = instructions['tag']
+        image_id = instructions['machine_specs']['image_id']
+        instance_type = instructions['machine_specs']['instance_type']
+        disk_size_in_gb = int(instructions['machine_specs']['disk_size'])
+        security_group = instructions['security_group']['name']
+
         dev_sda1 = BlockDeviceType()
-        dev_sda1.size = disk_size_in_gb
 
         bdm = BlockDeviceMapping()
         bdm['/dev/sda1'] = dev_sda1
 
+        dev_sda1.size = disk_size_in_gb
+
         reservation = self.conn.run_instances(
             image_id=image_id,
+            key_name=settings.AWS_KEYPAIR_NAME,
             instance_type=instance_type,
-            user_data=instructions['machine_specs']['bootstrap_script'],
+            user_data=self.get_bootstrap_script_for(instructions),
             security_groups=[security_group],
             monitoring_enabled=True,
             block_device_map=bdm)
@@ -143,17 +152,37 @@ class InstanceCreator(EC2Worker):
 
         return reservation.instances
 
+    def get_bootstrap_script_for(self, instructions):
+        url = settings.absurl('/bin/ready/{machine_token}'.format(**instructions))
+        dependencies = " ".join([
+            'git-core',
+            'python-pip',
+            'supervisor',
+            'python-dev',
+            'libmysqlclient-dev',
+            'mysql-client',
+            'libxml2-dev',
+            'libxslt1-dev',
+            'libevent-dev',
+            'libev-dev',
+        ])
+        script = "\n".join([
+            '#!/bin/bash',
+            'set -x',
+            'apt-get update',
+            'apt-get install -y {0}'.format(dependencies),
+            'wget "{0}'
+        ])
+
+        return script
+
     def consume(self, instructions):
         tag_name = instructions['tag']
         security_group = instructions['security_group']['name']
 
-        image_id = instructions['machine_specs']['image_id']
-        instance_type = instructions['machine_specs']['instance_type']
-        disk_size_in_gb = int(instructions['machine_specs']['disk_size'])
-
         instances = self.get_existing_instances(tag_name)
         if not instances:
-            instances = self.create_instances(image_id, instance_type, disk_size_in_gb, security_group)
+            instances = self.create_instances(instructions)
 
         instructions['instances'] = [self.serialize_instance(i) for i in instances]
         # wait until machine is running and finally produce

@@ -69,14 +69,11 @@ class EnqueueProject(Command):
 
         build_queue.enqueue({
             'environment_name': 'Production',
+            'machine_token': 'THISISAHARDCODEDTOKEN',
             'machine_specs': {
                 'image_id': 'ami-ad184ac4',
                 'instance_type': 't1.micro',
                 'disk_size': 10,
-                'bootstrap_script': '''#!/bin/bash
-export IPADDRESS=`ifconfig eth0 | egrep "inet addr" | sed "s,[^0-9]*[:],," | sed "s, .*$,,g"`
-curl -i -H "Accept: application/json" -X POST -d "ip_address=$IPADDRESS" http://ec2-54-218-234-227.us-west-2.compute.amazonaws.com/bin/ready
-                '''
             },
             'repository': {
                 'name': 'yipit_web',
