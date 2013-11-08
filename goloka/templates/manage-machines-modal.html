@@ -1,11 +1,9 @@
 {% for machine in machines %}
   <div class="uk-alert ">
-    <h3 class="uk-panel-title">{{ machine.repository.full_name }}{{ build.environment_name }}</h3>
+    <h3 class="uk-panel-title">{{ machine.repository.full_name }}{{ machine['environment_name'] }}</h3>
     <p>
       <h4>SSH Access</h4>
-      <textarea class="code">
-        ssh ubuntu@{{ machine['public_dns_name'] }}
-      </textarea>
+      {% for instance in machine['instances'] %}<code>ssh ubuntu@{{ instance['public_dns_name'] }}</code>{% endfor %}
     </p>
     <p>
       <h4>Security Group</h4>

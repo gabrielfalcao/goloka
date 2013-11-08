@@ -20,6 +20,7 @@ $(function(){
             "save_build_url":          $src.data("save-build-ajax-url"),
             "run_build_url":           $src.data("run-build-ajax-url"),
             "manage_builds_url":       $src.data("manage-builds-ajax-url"),
+            "manage_machines_url":       $src.data("manage-machines-ajax-url"),
             "create_hook_url":         $src.data("create-hook-ajax-url"),
             "show_repository_commits": $src.data("show-repo-commits-url")
         };
@@ -72,6 +73,15 @@ $(function(){
             modal.show();
         });
     };
+    function ManageMachines (repository) {
+        var modal = new $.UIkit.modal.Modal("#manage-machine-modal");
+        var url = url_for("manage_machines_url", {"owner": repository.owner.login, "repository": repository.name});
+
+        $.get(url, function(data){
+            $("#manage-machine-modal .modal-content").html(data);
+            modal.show();
+        });
+    };
     function ScheduleBuildNow (token) {
         var url = url_for("run_build_url", {"token": token});
         $.ajax({
@@ -120,6 +130,7 @@ $(function(){
         scope.CreateBuild = CreateBuild;
         scope.SaveBuild = SaveBuild;
         scope.ManageBuilds = ManageBuilds;
+        scope.ManageMachines = ManageMachines;
         scope.ScheduleBuildNow = ScheduleBuildNow;
         scope.ShowLog = ShowLog;
     });

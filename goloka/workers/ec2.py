@@ -18,7 +18,7 @@ log.addHandler(logging.StreamHandler(sys.stdout))
 
 class EC2Worker(Worker):
     def serialize_instance(self, instance):
-        types = (int, float, bool, type(None), str, unicode, dict, list, tuple, set)
+        types = (int, float, bool, type(None), str, unicode)
         data = dict([(k, getattr(instance, k)) for k in dir(instance) if not k.startswith('_') and isinstance(getattr(instance, k), types)])
         for key, value in data.items():
             if isinstance(value, dict):

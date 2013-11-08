@@ -46,11 +46,11 @@ class YipitDocsBroadcaster(Namespace, BroadcastMixin):
         total = redis.llen("goloka:logs")
         log = "<br />\n".join(redis.lrange("goloka:logs", 0, total))
         notification = redis.lpop("goloka:notifications") or False
-        self.broadcast_event("notification", {
-            'notification': notification and json.loads(notification),
-            'log': log,
-        })
-
+        if total or notification:
+            self.broadcast_event("notification", {
+                'notification': notification and json.loads(notification),
+                'log': log,
+            })
 
     def on_listen(self, *args, **kw):
         workers = [

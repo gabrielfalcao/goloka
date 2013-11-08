@@ -42,10 +42,7 @@ class RunWorkers(Command):
                 sys.stderr.write("\033[31m{0}\033[0m".format(payload['error']))
                 continue
 
-            payload.pop('instances')
             redis.sadd("goloka:{repository[full_name]}:machines", json.dumps(payload))
-            print "\033[1;32m{tag} is ready: \033[1;33mssh ubuntu@{instances[0][public_dns_name]}\033[0m".format(**payload)
-
 
 
 class EnqueueProject(Command):
