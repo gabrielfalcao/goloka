@@ -34,14 +34,18 @@ class S3Worker(Worker):
 
 index_html = """
 <html>
-  <head><title>My S3 Webpage</title></head>
-  <body><h2>This is my S3-based website</h2></body>
+  <head><title>Index for {repository[full_name]}</title></head>
+  <body><h2>Welcome to {repository[full_name]}</h2>
+  <footer>goloka</footer>
+  </body>
 </html>"""
 
 error_html = """
 <html>
-  <head><title>Something is wrong</title></head>
-  <body><h2>Something is terribly wrong with my S3-based website</h2></body>
+  <head><title>Error</title></head>
+  <body><h2>Error in {repository[full_name]}</h2>
+  <footer>goloka</footer>
+  </body>
 </html>"""
 
 
