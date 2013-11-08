@@ -34,7 +34,12 @@ class S3Worker(Worker):
 
 index_html = """
 <html>
-  <head><title>Index for {repository[full_name]}</title></head>
+  <head><title>Index for {repository[full_name]}</title>
+<link href='http://fonts.googleapis.com/css?family=Share+Tech+Mono' rel='stylesheet' type='text/css'>
+<style type="text/css">
+* font-family: "Share Tech Mono";
+</style>
+  </head>
   <body><h2>Welcome to {repository[full_name]}</h2>
   <footer>goloka</footer>
   </body>
@@ -42,7 +47,12 @@ index_html = """
 
 error_html = """
 <html>
-  <head><title>Error</title></head>
+  <head><title>Error</title>
+<link href='http://fonts.googleapis.com/css?family=Share+Tech+Mono' rel='stylesheet' type='text/css'>
+<style type="text/css">
+* font-family: "Share Tech Mono";
+</style>
+  </head>
   <body><h2>Error in {repository[full_name]}</h2>
   <footer>goloka</footer>
   </body>
