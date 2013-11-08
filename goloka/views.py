@@ -284,6 +284,7 @@ def github_callback(token):
 @mod.route("/bin/dashboard/save-build/<owner>/<repository>.json", methods=['POST'])
 @requires_login
 def ajax_save_build(owner, repository):
+    print "GOT IN THE AJAX SAVE", owner, repository
     token = session['github_token']
     user = User.using(db.engine).find_one_by(github_token=token)
 
