@@ -35,14 +35,19 @@ class EC2Worker(Worker):
             self.__conn = self.get_connection()
 
         return self.__conn
+
     def get_slug_for_name(self, name):
-        return re.sub(r'\W+', '-', name)
+        return re.sub(r'\W+', '-', name).lower()
 
     def get_name_and_description(self, instructions):
         environment_name = instructions['environment_name']
+        environment_slug = self.get_slug_for_name(environment_name)
+        instructions['environment_slug'] = environment_slug
+
         repository_name = instructions['repository']['full_name']
         description = '{0} - {1}: web + ssh open to the world'.format(environment_name, repository_name)
-        name = ':goloka:'.join([environment_name, repository_name])
+
+        name = ':goloka:'.join([environment_slug, repository_name]).lower()
         return name, description
 
     def get_security_group(self, name):
@@ -52,7 +57,6 @@ class EC2Worker(Worker):
 
 class SecurityGroupCreator(EC2Worker):
     def get_or_create_security_group(self, name, description):
-
         group = self.get_security_group(name)
         if not group:
             group = self.conn.create_security_group(name, description)
@@ -125,6 +129,7 @@ class InstanceCreator(EC2Worker):
         return result
 
     def create_instances(self, instructions):
+        instance_name = "{environment_name} for {repository[full_name]}".format(**instructions)
         tag_name = instructions['tag']
         image_id = instructions['machine_specs']['image_id']
         instance_type = instructions['machine_specs']['instance_type']
@@ -148,6 +153,7 @@ class InstanceCreator(EC2Worker):
             block_device_map=bdm)
 
         for instance in reservation.instances:
+            instance.add_tag("Name", instance_name)
             instance.add_tag(tag_name)
 
         return reservation.instances
@@ -167,12 +173,12 @@ class InstanceCreator(EC2Worker):
             'libev-dev',
         ])
         script = "\n".join([
-            '#!/bin/bash',
+            '#!/bin/bash\n',
             'set -x',
             'apt-get update',
             'apt-get install -y {0}'.format(dependencies),
             'wget "{0}'
-        ])
+        ]).strip()
 
         return script
 

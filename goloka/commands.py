@@ -38,10 +38,11 @@ class RunWorkers(Command):
             workers.enqueue_build(next_build)
             payload = workers.wait_and_get_work()
             if 'error' in payload:
-                sys.stderr.write(payload['error'])
+                sys.stderr.write("\033[1;31mDeploy failed for {environment_name} - {repository[full_name]}\033[0m\n".format(**payload))
+                sys.stderr.write("\033[31m{0}\033[0m".format(payload['error']))
                 continue
 
-            print "Finished deploy:", payload
+            print "\033[1;32m{tag} is ready: \033[1;33mssh ubuntu@{instances[0][public_dns_name]}\033[0m".format(**payload)
 
 
 class EnqueueProject(Command):
@@ -74,14 +75,19 @@ class EnqueueProject(Command):
                 'image_id': 'ami-ad184ac4',
                 'instance_type': 't1.micro',
                 'disk_size': 10,
+                'assets_info': {
+                    'path': '/srv/static',
+                    'index_file': 'welcome.html',  # if not set defaults to 'index.html'
+                    'error_file': 'cute-kitties-404.html',  # if not set defaults to 'error.html'
+                },
             },
             'repository': {
                 'name': 'yipit_web',
                 'full_name': 'Yipit/yipit_web',
                 'owner': {
                     'name': 'Yipit',
-                }
-            }
+                },
+            },
         })
 
 

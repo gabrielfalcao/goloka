@@ -55,11 +55,10 @@ class Worker(Thread):
         return self.produce_queue.put(payload)
 
     def before_consume(self):
-        print self, "is about to consume its queue"
+        self.log("%s is about to consume its queue", self)
 
     def after_consume(self, instructions):
-        print self, "is done"
-
+        self.log("%s is done", self)
 
     def do_rollback(self, instructions):
         try:
@@ -79,10 +78,11 @@ class Worker(Thread):
             except Exception as e:
                 error = traceback.format_exc(e)
                 self.log(error)
-                self.produce({
+                instructions.update({
                     'success': False,
                     'error': error
                 })
+                self.produce(instructions)
                 self.do_rollback(instructions)
                 continue
 
