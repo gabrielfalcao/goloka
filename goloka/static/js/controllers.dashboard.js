@@ -91,7 +91,8 @@ $(function(){
     };
     function SaveBuild (new_build) {
         var url = url_for("save_build_url", {"owner": new_build.repository.owner.login, "repository": new_build.repository.name});
-
+        console.log("will POST to", url)
+        console.log("with", new_build)
         $.ajax({
             url:url,
             type:"POST",
