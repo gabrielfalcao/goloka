@@ -214,12 +214,10 @@ def webhook(owner, repository, md_token):
 
 @mod.route('/bin/ready/<token>')
 def report_machine_ready(token):
-    msg = "The machine {0} just reported it's working".format(request.remote_addr)
-    logger.info(msg)
+    build = Build.get_by_token(token)
+    msg = "The machine {0} just reported it's working for {1}".format(request.remote_addr, build.environment_name)
     print msg
-    lines = "\n".join(['~' * 79] * 30)
-    lines = msg + '\n' + lines
-    return Response(lines, mimetype="text/plain")
+    return json_response(build.to_dict())
 
 
 @mod.route("/robots.txt")
