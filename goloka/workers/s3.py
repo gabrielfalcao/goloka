@@ -110,3 +110,7 @@ class StaticServeCreator(S3Worker):
         if bucket:
             self.log("Rolling back creation of bucket {0}".format(bucket.name))
             bucket.delete()
+
+    def after_consume(self, instructions):
+        msg = "S3 done creating bucket '{bucket[name]}' at https://{bucket[domain]}".format(**instructions)
+        self.log(msg)

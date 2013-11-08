@@ -42,11 +42,12 @@ class Worker(Thread):
     def __str__(self):
         return '<{0}>'.format(self.__class__.__name__)
 
-    def log(self, message, *args):
+    def log(self, message, *args, with_redis=True):
         redis = StrictRedis()
         msg = message % args
         log.info(message, *args)
-        redis.rpush("goloka:logs", json.dumps({'message': msg}))
+        if with_redis:
+            redis.rpush("goloka:logs", json.dumps({'message': msg}))
 
     def consume(self, instructions):
         raise NotImplemented("You must implement the consume method by yourself")
@@ -55,7 +56,7 @@ class Worker(Thread):
         return self.produce_queue.put(payload)
 
     def before_consume(self):
-        self.log("%s is about to consume its queue", self)
+        self.log("%s is about to consume its queue", self, with_redis=False)
 
     def after_consume(self, instructions):
         self.log("%s is done", self)

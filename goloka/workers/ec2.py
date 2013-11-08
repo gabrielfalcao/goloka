@@ -110,6 +110,10 @@ class SecurityGroupCreator(EC2Worker):
         }
         self.produce(instructions)
 
+    def after_consume(self, instructions):
+        msg = "Security group ready: {security_group[name]}".format(**instructions)
+        self.log(msg)
+
     def rollback(self, instructions):
         name, description = self.get_name_and_description(instructions)
         group = self.get_security_group(name)
@@ -130,6 +134,7 @@ class InstanceCreator(EC2Worker):
 
     def create_instances(self, instructions):
         instance_name = "{environment_name} for {repository[full_name]}".format(**instructions)
+        instructions['instance_name'] = instance_name
         tag_name = instructions['tag']
         image_id = instructions['machine_specs']['image_id']
         instance_type = instructions['machine_specs']['instance_type']
@@ -193,6 +198,12 @@ class InstanceCreator(EC2Worker):
         instructions['instances'] = [self.serialize_instance(i) for i in instances]
         # wait until machine is running and finally produce
         self.produce(instructions)
+
+    def after_consume(self, instructions):
+        total_instances = len(instructions['instances'])
+        label = '{0} instance{1}'.format(total_instances, total_instances != 1 and 's' or '')
+        msg = "EC2 {0} ready".format(label)
+        self.log(msg)
 
     def rollback(self, instructions):
         sgname = instructions['security_group']['name']
