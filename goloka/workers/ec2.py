@@ -183,13 +183,13 @@ class InstanceCreator(EC2Worker):
             'set -x',
             'apt-get update',
             'apt-get install -y {0}'.format(dependencies),
-            'wget "{0}"'.format(url)
         ]).strip()
 
         extra = "\n".join(["echo '{key}' >> /root/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
         extra = "\n".join(["echo '{key}' >> /home/ubuntu/.ssh/known_hosts".format(**key) for key in instructions['ssh_keys']])
 
         script = "{0}\n{1}\n{2}".format(script_header, extra, instructions['extra_script'])
+        script += "\nwget '{0}'\n".format(url)
         return script
 
     def consume(self, instructions):
