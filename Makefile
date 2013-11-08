@@ -80,7 +80,7 @@ full-deploy: create-machine deploy
 
 sync:
 	@git push
-	@make deploy tail
+	@make deploy
 
 workers:
 	@python goloka/bin.py workers

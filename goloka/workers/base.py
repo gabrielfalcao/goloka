@@ -42,7 +42,8 @@ class Worker(Thread):
     def __str__(self):
         return '<{0}>'.format(self.__class__.__name__)
 
-    def log(self, message, *args, with_redis=True):
+    def log(self, message, *args, **kw):
+        with_redis = kw.get('with_redis')
         redis = StrictRedis()
         msg = message % args
         log.info(message, *args)
