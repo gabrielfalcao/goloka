@@ -44,9 +44,10 @@ else:
 DOCUMENTATION_ROOT = LOCAL_FILE('static', 'docs')
 
 SCHEMA = PORT == 443 and 'https://' or "http://"
-GITHUB_CALLBACK_URL = '{SCHEMA}{DOMAIN}/.sys/callback'.format(**locals())
+
 absurl = lambda *path: "{0}{1}/{2}".format(SCHEMA, DOMAIN, "/".join(path).lstrip('/'))
 sslabsurl = lambda *path: "{0}{1}/{2}".format("https://", DOMAIN, "/".join(path).lstrip('/'))
+GITHUB_CALLBACK_URL = absurl('/.sys/callback')
 
 RELEASE = env.get('RELEASE', uuid4().hex)
 # Session key, CHANGE IT IF YOU GET TO THE PRODUCTION! :)

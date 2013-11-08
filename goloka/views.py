@@ -206,12 +206,14 @@ def webhook(owner, repository, md_token):
     return json_response({'cool': True})
 
 
-@mod.route('/bin/ready', methods=["POST", "PUT"])
-def report_machine_ready():
-    logger.info("A machine just reported it's working")
-    print "A machine just reported it's working"
-    print request.form
-    return json_response({'thankyou': True})
+@mod.route('/bin/ready/<token>')
+def report_machine_ready(token):
+    msg = "The machine {0} just reported it's working".format(request.remote_addr)
+    logger.info(msg)
+    print msg
+    lines = "\n".join(['~' * 79] * 30)
+    lines = msg + '\n' + lines
+    return Response(lines, mimetype="text/plain")
 
 
 @mod.route("/robots.txt")
