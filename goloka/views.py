@@ -217,6 +217,8 @@ def report_machine_ready(token):
     build = Build.get_by_token(token)
     msg = "The machine {0} just reported it's working for {1}".format(request.remote_addr, build.environment_name)
     print msg
+    redis = StrictRedis()
+    redis.rpush("goloka:logs", msg)
     return json_response(build.to_dict)
 
 
