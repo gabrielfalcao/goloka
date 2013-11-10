@@ -100,6 +100,7 @@ $(function(){
         modal.show();
     };
     function SaveBuild (new_build) {
+        console.log("Saving build", new_build);
         socket.emit("save_build", md_token, new_build);
     }
     socket.on("build_saved", function(data){
