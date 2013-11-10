@@ -287,12 +287,19 @@ def ajax_save_build(owner, repository):
     print "GOT IN THE AJAX SAVE", owner, repository
     token = session['github_token']
     user = User.using(db.engine).find_one_by(github_token=token)
+    print "FOUND USER BY TOKEN", user
 
     repository = request.json['repository']
+    print "parsed repository"
     environment_name = request.json['environment_name']
+    print "parsed environment_name"
     instance_type = request.json['instance_type']
+    print "parsed disk_size"
     disk_size = request.json.get('disk_size', None) or '10'
+    print "parsed script"
     script = request.json.get('script')
+
+    print "PARSED FULL REQUEST"
 
     my_build = Build.create(
         user,
@@ -302,6 +309,7 @@ def ajax_save_build(owner, repository):
         repository=repository,
         script=script,
     )
+    print "Build created, returning json now!"
 
     return json_response(my_build.to_dict())
 
