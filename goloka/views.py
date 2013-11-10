@@ -281,40 +281,6 @@ def github_callback(token):
 
     return redirect(next_url)
 
-
-@mod.route("/bin/dashboard/save-build/<owner>/<repository>.json", methods=['POST'])
-@requires_login
-def ajax_save_build(owner, repository):
-    print "GOT IN THE AJAX SAVE", owner, repository
-    token = session['github_token']
-    user = User.using(db.engine).find_one_by(github_token=token)
-    print "FOUND USER BY TOKEN", user
-
-    repository = request.json['repository']
-    print "parsed repository"
-    environment_name = request.json['environment_name']
-    print "parsed environment_name"
-    instance_type = request.json['instance_type']
-    print "parsed disk_size"
-    disk_size = request.json.get('disk_size', None) or '10'
-    print "parsed script"
-    script = request.json.get('script')
-
-    print "PARSED FULL REQUEST"
-
-    my_build = Build.create(
-        user,
-        environment_name=environment_name,
-        instance_type=instance_type,
-        disk_size=disk_size,
-        repository=repository,
-        script=script,
-    )
-    print "Build created, returning json now!"
-
-    return json_response(my_build.to_dict())
-
-
 @mod.route("/bin/dashboard/manage-builds/<owner>/<repository>.json")
 @requires_login
 def ajax_manage_builds(owner, repository):
@@ -328,14 +294,3 @@ def ajax_manage_machines(owner, repository):
     redis = StrictRedis()
     machines = map(json.loads, redis.smembers("goloka:{owner}/{repository}:machines".format(**locals())))
     return render_template('manage-machines-modal.html', machines=machines, owner=owner, repository_name=repository)
-
-
-@mod.route("/bin/dashboard/run-build/<token>.json", methods=['POST'])
-@requires_login
-def ajax_run_build(token):
-    my_build = Build.get_by_token(token)
-    if my_build:
-        my_build.run()
-        return json_response(my_build.to_dict())
-
-    return error_json_response('no such build for token {0}'.format(token))
