@@ -84,15 +84,14 @@ $(function(){
         });
     };
     function ScheduleBuildNow (token) {
-        humane.log("Scheduling build " + token)
         socket.emit('run_build', md_token, token);
     };
     window.ScheduleBuildNow = ScheduleBuildNow;
     socket.on('build_run_confirmed', function(data) {
-        humane.log(data.message)
+        humane.log("The build of environment" + data.environment_name + " was enqueued! :)");
     });
     socket.on('unable_to_schedule_build', function(token) {
-        humane.log("Could not find build "+ token)
+        humane.log("Could not find build "+ token);
     })
 ;
     function ShowLog () {

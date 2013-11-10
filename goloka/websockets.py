@@ -12,6 +12,7 @@ from socketio.mixins import BroadcastMixin
 from redis import StrictRedis
 from goloka import db
 from goloka.models import User, Build
+redis = StrictRedis()
 
 
 class Namespace(BaseNamespace):
@@ -27,40 +28,8 @@ class Namespace(BaseNamespace):
 
         return ''
 
-redis = StrictRedis()
-class YipitDocsBroadcaster(Namespace, BroadcastMixin):
-    def broadcast_status(self, text, error=None):
-        traceback = self.format_exception(error)
-        css_class = error and 'error' or 'success'
 
-        payload = self.serialize({
-            'text': text,
-            'traceback': traceback,
-            'ok': not error,
-            'when': self.humanized_now(),
-            'class': css_class
-        })
-        self.broadcast_event('status', payload)
-        if error:
-            gevent.sleep(30)
-
-    def send_notifications(self):
-        total = redis.llen("goloka:logs")
-        log = "<br />\n".join(redis.lrange("goloka:logs", 0, total))
-        notification = redis.lpop("goloka:notifications") or False
-        if total or notification:
-            self.broadcast_event("notification", {
-                'notification': notification and json.loads(notification),
-                'log': log,
-            })
-
-    def on_listen(self, *args, **kw):
-        workers = [
-            self.spawn(self.send_notifications),
-        ]
-        gevent.joinall(workers)
-
-
+class GolokaDashboard(Namespace, BroadcastMixin):
     def on_save_build(self, md_token, build_info):
         user = User.using(db.engine).find_one_by(md_token=md_token)
 
@@ -93,4 +62,4 @@ class YipitDocsBroadcaster(Namespace, BroadcastMixin):
             self.emit("unable_to_schedule_build", build_token)
 
 
-NAMESPACES = {"": YipitDocsBroadcaster}
+NAMESPACES = {"": GolokaDashboard}

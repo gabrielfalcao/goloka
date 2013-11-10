@@ -19,16 +19,13 @@ class SocketIOApp(object):
     def __call__(self, environ, start_response):
         from goloka.websockets import NAMESPACES
 
-        log.info("Handling %s", environ['PATH_INFO'])
         if environ['PATH_INFO'].startswith('/socket.io'):
+            log.info("socket.io handling %s", environ['PATH_INFO'])
             socketio_manage(environ, NAMESPACES)
+            log.info("socket.io handled %s", environ['PATH_INFO'])
             return
 
+        log.info("flask handling %s", environ['PATH_INFO'])
         return self.app.web(environ, start_response)
 
 app = SocketIOApp(App.from_env())
-
-# from OpenSSL import SSL
-# context = SSL.Context(SSL.SSLv23_METHOD)
-# context.use_privatekey_file(settings.SSL_PRIVATE_KEY_FILE)
-# context.use_certificate_file(settings.SSL_CERT_FILE)
