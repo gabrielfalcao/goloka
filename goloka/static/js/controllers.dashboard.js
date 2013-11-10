@@ -38,6 +38,7 @@ $(function(){
 
     var ADDRESS = $("body").data("socketaddress");
     var username = $("#socket-meta").data("username");
+    var md_token = $("#socket-meta").data("token");
 
     var socket = io.connect(ADDRESS);
     var scope = angular.element($("body")).scope();
@@ -83,44 +84,31 @@ $(function(){
         });
     };
     function ScheduleBuildNow (token) {
-        var url = url_for("run_build_url", {"token": token});
-        $.ajax({
-            url:url,
-            type:"POST",
-            data:JSON.stringify({
-                'token': token,
-            }),
-            contentType:"application/json; charset=utf-8",
-            dataType:"json",
-            success: function(data){
-                console.log("DONE WITH", data);
-            }
-        });
-
-        humane.log("Build scheduled successfully:" + repository.full_name)
+        humane.log("Scheduling build " + token)
+        socket.emit('run_build', md_token, token);
     };
+    window.ScheduleBuildNow = ScheduleBuildNow;
+    socket.on('build_run_confirmed', function(data) {
+        humane.log(data.message)
+    });
+    socket.on('unable_to_schedule_build', function(token) {
+        humane.log("Could not find build "+ token)
+    })
+;
     function ShowLog () {
         var modal = new $.UIkit.modal.Modal("#live-log-modal");
         modal.show();
     };
     function SaveBuild (new_build) {
-        var url = url_for("save_build_url", {"owner": new_build.repository.owner.login, "repository": new_build.repository.name});
-        console.log("will POST to", url)
-        console.log("with", new_build)
-        $.ajax({
-            url:url,
-            type:"POST",
-            data:JSON.stringify(new_build),
-            contentType:"application/json; charset=utf-8",
-            dataType:"json",
-            success: function(data){
-                var modal = new $.UIkit.modal.Modal("#create-build-modal");
-                modal.hide();
-                $("#create-build-modal").hide();
-                humane.log("Created build " + data.environment_name);
-            }
-        });
+        socket.emit("save_build", md_token, new_build);
     }
+    socket.on("build_saved", function(data){
+        var modal = new $.UIkit.modal.Modal("#create-build-modal");
+        modal.hide();
+        $("#create-build-modal").hide();
+        humane.log("Created build " + data.environment_name);
+    });
+
     scope.$apply(function(){
         scope.repositories = {};
         scope.repositories_by_name = {};

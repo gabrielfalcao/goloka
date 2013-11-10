@@ -126,6 +126,10 @@ class Build(object):
         self.machine_token = machine_token or self.create_hash()
         self.extra_script = extra_script or ''
 
+    @property
+    def token(self):
+        return self.machine_token
+
     def create_hash(self):
         sha = hashlib.sha512()
         sha.update("goloka:build")

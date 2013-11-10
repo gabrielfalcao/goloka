@@ -13,11 +13,9 @@
       <h4>Repository</h4>
       <textarea class="code">{{ build.repository.full_name }}</textarea>
     </p>
-    <form method="POST" action="{{ url_for('.ajax_run_build', token=build.machine_token) }}">
-      <button type="submit" class="uk-button uk-button-large uk-text-large uk-button-danger">
-    </form>
-
-      <i class="uk-icon-cog uk-icon-large"></i>Build Now</button>
+    <button type="button" onclick="ScheduleBuildNow('{{ build.token }}')" class="uk-button uk-button-large uk-text-large uk-button-info">
+      <i class="uk-icon-cog uk-icon-medium"> </i>Build Now</button>
+      <code>{{ build.token }}</code>
   </div>
 {% endfor %}
 

@@ -79,6 +79,7 @@ def inject_basics():
         messages=session.pop('messages', []),
         github_user=session.get('github_user_data', None),
         json=json,
+        user=g.user,
         len=len,
         full_url_for=full_url_for,
         ssl_full_url_for=ssl_full_url_for,
