@@ -30,19 +30,18 @@ class RunWorkers(Command):
         from goloka.queues import build_queue
 
         workers = MachineCreators()
-        workers.start()
 
-        while True:
+        while workers.are_running():
             print "Waiting for a build..."
             next_build = build_queue.get_next()
-            workers.enqueue_build(next_build)
+            workers.feed(next_build)
             payload = workers.wait_and_get_work()
             if 'error' in payload:
                 sys.stderr.write("\033[1;31mDeploy failed for {environment_name} - {repository[full_name]}\033[0m\n".format(**payload))
                 sys.stderr.write("\033[31m{0}\033[0m".format(payload['error']))
                 continue
 
-            redis.sadd("goloka:{repository[full_name]}:machines", json.dumps(payload))
+            redis.sadd("goloka:{repository[full_name]}:machines".format(**payload), json.dumps(payload))
 
 
 class EnqueueProject(Command):

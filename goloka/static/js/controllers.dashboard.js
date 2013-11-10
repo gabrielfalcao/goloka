@@ -20,7 +20,7 @@ $(function(){
             "save_build_url":          $src.data("save-build-ajax-url"),
             "run_build_url":           $src.data("run-build-ajax-url"),
             "manage_builds_url":       $src.data("manage-builds-ajax-url"),
-            "manage_machines_url":       $src.data("manage-machines-ajax-url"),
+            "manage_machines_url":     $src.data("manage-machines-ajax-url"),
             "create_hook_url":         $src.data("create-hook-ajax-url"),
             "show_repository_commits": $src.data("show-repo-commits-url")
         };

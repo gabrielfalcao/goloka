@@ -311,13 +311,13 @@ def ajax_save_build(owner, repository):
 def ajax_manage_builds(owner, repository):
     full_name = "{0}/{1}".format(owner, repository)
     builds = Build.get_all_by_full_name(full_name).values()
-    return render_template('manage-builds-modal.html', builds=builds)
+    return render_template('manage-builds-modal.html', full_name=full_name, builds=builds)
 
 @mod.route("/bin/dashboard/manage-machines/<owner>/<repository>.json")
 @requires_login
 def ajax_manage_machines(owner, repository):
     redis = StrictRedis()
-    machines = map(json.loads, redis.smembers("goloka:{repository[full_name]}:machines"))
+    machines = map(json.loads, redis.smembers("goloka:{owner}/{repository}:machines".format(**locals())))
     return render_template('manage-machines-modal.html', machines=machines, owner=owner, repository_name=repository)
 
 

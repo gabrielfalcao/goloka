@@ -1,4 +1,4 @@
-<h1>Showing builds for {{ builds[0].repository.full_name }}</h1>
+<h1>Showing builds for {{ full_name }}</h1>
 
 {% for build in builds %}
   <div class="uk-alert ">
@@ -17,7 +17,12 @@
       <button type="submit" class="uk-button uk-button-large uk-text-large uk-button-danger">
     </form>
 
-      <i class="uk-icon-cog uk-icon-large"></i>
-BUILD NOW</button>
+      <i class="uk-icon-cog uk-icon-large"></i>Build Now</button>
   </div>
 {% endfor %}
+
+{% if not builds %}
+  <div class="uk-alert uk-alert-danger">
+    <h3 class="uk-panel-title">No builds so far...</h3>
+  </div>
+{% endif %}
