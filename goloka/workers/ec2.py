@@ -57,8 +57,8 @@ class EC2Worker(Worker):
 
     def get_security_group(self, name):
         existing_groups = dict([(g.name, g) for g in self.conn.get_all_security_groups()])
-
         return existing_groups.get(name, None)
+
 
 class SecurityGroupCreator(EC2Worker):
     def get_or_create_security_group(self, name, description):
@@ -206,9 +206,11 @@ class InstanceCreator(EC2Worker):
             instances = self.create_instances(instructions)
 
         for instance in instances:
+            interval = 1
             while instance.state != 'running':
                 instance.update()
-                time.sleep(1)
+                time.sleep(interval)
+                interval = interval * 3
 
         instructions['instances'] = [self.serialize_instance(i) for i in instances]
         # wait until machine is running and finally produce

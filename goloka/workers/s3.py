@@ -62,11 +62,13 @@ error_html = """
 class StaticServeCreator(S3Worker):
     def get_bucket_name(self, instructions):
         name = "{environment_slug}.{repository[full_name]}".format(**instructions)
-        return re.sub(r'[^a-zA-Z0-9-]+', '-', name).lower().strip('-')
+        result = re.sub(r'[^a-zA-Z0-9-]+', '-', name).lower().strip('-')
+        return result
 
     def get_bucket(self, instructions):
         bucket_name = self.get_bucket_name(instructions)
         bucket = self.conn.lookup(bucket_name)
+        log.info("Bucket lookup: %s %s", bucket_name, bucket)
         return bucket
 
     def get_or_create_bucket(self, instructions):
@@ -76,6 +78,7 @@ class StaticServeCreator(S3Worker):
             bucket = self.conn.create_bucket(bucket_name,
                                              location=Location.USWest,
                                              policy='public-read')
+            self.log("Bucket created: %s", bucket)
 
         return bucket
 
@@ -99,17 +102,20 @@ class StaticServeCreator(S3Worker):
 
         config = bucket.configure_website('index.html', 'error.html')
 
-        instructions['bucket'] = {
+        bucket_info = {
             'name': bucket.name,
             'domain': bucket.get_website_endpoint(),
         }
+        instructions['bucket'] = bucket_info
+        self.log("Static website sucessfully configured: %s", bucket_info)
         self.produce(instructions)
 
     def rollback(self, instructions):
         bucket = self.get_bucket(instructions)
         if bucket:
-            self.log("Rolling back creation of bucket {0}".format(bucket.name))
+            log.warning("Rolling back creation of bucket %s", bucket.name)
             bucket.delete()
+            log.warning("%s deleted", bucket)
 
     def after_consume(self, instructions):
         msg = "S3 done creating bucket '{bucket[name]}' at https://{bucket[domain]}".format(**instructions)

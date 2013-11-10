@@ -1,33 +1,53 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from goloka.workers.ec2 import SecurityGroupCreator
-from goloka.workers.ec2 import InstanceCreator
-from goloka.workers.s3 import StaticServeCreator
 
 from Queue import Queue
 
 
-class MachineCreators(object):
+class Pipeline(object):
     def __init__(self):
-        self.security_group_step1 = Queue()
-        self.instance_to_create_step2 = Queue()
-        self.assets_bucket_to_create_step3 = Queue()
-        self.environments_done = Queue()
+        self.running = False
+        self.queues = [Queue() for _ in self.steps] + [Queue()]
+        self.workers = [self.make_worker(Worker, index) for index, Worker in enumerate(self.steps)]
 
-        self.workers = (
-            ('security group creator', SecurityGroupCreator(self.security_group_step1, self.instance_to_create_step2)),
-            ('instance creator', InstanceCreator(self.instance_to_create_step2, self.assets_bucket_to_create_step3)),
-            ('static server creator', StaticServeCreator(self.assets_bucket_to_create_step3, self.environments_done)),
-        )
+    def make_worker(self, Worker, index):
+        return Worker(self.queues[index], self.queues[index + 1])
 
+    @property
+    def input(self):
+        return self.queues[0]
+
+    @property
+    def output(self):
+        return self.queues[-1]
 
     def start(self):
-        for name, worker in self.workers:
+        self.running = True
+        for worker in self.workers:
             worker.start()
 
-    def enqueue_build(self, instructions):
-        self.security_group_step1.put(instructions)
+    def feed(self, item):
+        self.input.put(item)
 
     def wait_and_get_work(self):
-        return self.environments_done.get()
+        return self.output.get()
+
+    def are_running(self):
+        if self.running:
+            return True
+
+        self.start()
+        return all([w.is_alive() for w in self.workers])
+
+
+
+class MachineCreators(Pipeline):
+    from goloka.workers.ec2 import SecurityGroupCreator
+    from goloka.workers.ec2 import InstanceCreator
+    from goloka.workers.s3 import StaticServeCreator
+    steps = [
+        SecurityGroupCreator,
+        InstanceCreator,
+        StaticServeCreator,
+    ]
