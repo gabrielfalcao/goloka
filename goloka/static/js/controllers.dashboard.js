@@ -99,8 +99,8 @@ $(function(){
         modal.show();
     };
     function SaveBuild (new_build) {
-        console.log("Saving build", new_build);
-        socket.emit("save_build", md_token, new_build);
+        console.log("Saving build", md_token, new_build,
+                    socket.emit("save_build", md_token, new_build))
     }
     socket.on("build_saved", function(data){
         var modal = new $.UIkit.modal.Modal("#create-build-modal");
@@ -124,7 +124,6 @@ $(function(){
     });
     socket.on('connect', function() {
         console.log('connected');
-        socket.emit('listen');
     });
     socket.on('notification', function(data) {
         if (data.notification) {
@@ -134,7 +133,6 @@ $(function(){
         scope.$apply(function(){
             scope.log = data.log;
             console.log(data);
-            socket.emit('listen');
         });
 
     });
@@ -143,14 +141,7 @@ $(function(){
     });
     socket.on('disconnect', function() {
         console.log('disconnected');
-        $(".live-stats-repository").removeClass("active");
-        scope.$apply(function(){
-            scope.visitors = null;
-        });
     });
-    $(function(){
-    });
-
 });
 
 APP.controller("DashboardController", function($scope){
