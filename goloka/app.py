@@ -137,14 +137,15 @@ class App(object):
             return render_template('500.html'), 500
 
     def setup_logging(self, output, level):
-        other_loggers = map(getLogger, [
+        loggers = map(getLogger, [
             'sqlalchemy',
             'goloka.views',
             'goloka:workers',
             'goloka:workers:ec2',
             'goloka:workers:s3',
         ])
-        for logger in [self.web.logger, other_loggers]:
+        loggers.append(self.web.logger)
+        for logger in loggers:
             logger.addHandler(StreamHandler(output))
             logger.setLevel(level)
 
