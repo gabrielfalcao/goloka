@@ -30,16 +30,22 @@ class Namespace(BaseNamespace):
 
 class GolokaDashboard(Namespace):
     def on_save_build(self, md_token, build_info):
+        log.info("Will save build %s", build_info)
+
         from goloka import db
         from goloka.models import User, Build
+        log.info("Grabbing user by token %s", md_token)
 
         user = User.using(db.engine).find_one_by(md_token=md_token)
+
+        log.info("Getting info")
 
         repository = build_info['repository']
         environment_name = build_info['environment_name']
         instance_type = build_info['instance_type']
         disk_size = build_info.get('disk_size', None) or '10'
         script = build_info.get('script')
+        log.warning("Creating build %s", md_token)
 
         my_build = Build.create(
             user,

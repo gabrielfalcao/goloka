@@ -38,7 +38,11 @@ class PrettyFormatter(logging.Formatter):
     }
     def format(self, record):
         level_name = record.levelname
-        original = logging.Formatter.format(self, record)
+        try:
+            original = logging.Formatter.format(self, record)
+        except TypeError:
+            original = ":".join([record.msg, str(record.args)])
+
         color = self.COLORS.get(level_name, '\033[37m')
         time = datetime.now().strftime("\033[37m[%Y-%m-%d %H:%M:%S]\033[0m")
         return "{time} {color}[{level_name}]\033[1;37m {original}\033[0m".format(**locals())
