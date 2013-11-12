@@ -9,9 +9,6 @@ from gevent.coros import Semaphore
 from datetime import datetime
 from socketio.namespace import BaseNamespace
 
-from goloka import db
-from goloka.models import User, Build
-
 
 class Namespace(BaseNamespace):
     def humanized_now(self):
@@ -29,6 +26,9 @@ class Namespace(BaseNamespace):
 
 class GolokaDashboard(Namespace):
     def on_save_build(self, md_token, build_info):
+        from goloka import db
+        from goloka.models import User, Build
+
         user = User.using(db.engine).find_one_by(md_token=md_token)
 
         repository = build_info['repository']
@@ -49,6 +49,7 @@ class GolokaDashboard(Namespace):
         self.emit("build_saved", my_build.to_dict())
 
     def on_run_build(self, md_token, build_token):
+        from goloka.models import Build
         my_build = Build.get_by_token(build_token)
         if my_build:
             my_build.run()
