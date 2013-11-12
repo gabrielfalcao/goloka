@@ -18,6 +18,7 @@ def create():
         'python-gnupg',
         'supervisor',
         'redis-server',
+        'rng-tools',
         'python-dev',
         'libmysqlclient-dev',
         'mysql-client',
@@ -30,6 +31,9 @@ def create():
     sudo("apt-get -q=2 update")
     sudo("apt-get install -q=2 -y aptitude")
     sudo("aptitude install -q=2 -y {0}".format(" ".join(dependencies)))
+    sudo('echo "HRNGDEVICE=/dev/urandom" >> /etc/default/rng-tools')
+    sudo("dpkg-reconfigure rng-tools")
+
     sudo("(test -e /srv && rm -rf /srv/)")
     sudo("rm -rf /srv/goloka")
     sudo("rm -rf /var/log/goloka")
