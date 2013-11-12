@@ -41,6 +41,7 @@ def create():
     sudo("mkdir -p /srv")
     sudo("chown -R ubuntu.ubuntu /srv")
     sudo("chown -R ubuntu.ubuntu /var/log")
+    sudo("chown -R redis.redis /var/log/redis")
     sudo("chown -R ubuntu.ubuntu /etc/supervisor/conf.d")
     sudo("chmod -R 755 /etc/supervisor")
 
