@@ -27,9 +27,9 @@ def create():
         'libev-dev',
         'virtualenvwrapper',
     ]
-    # sudo("apt-get -q=2 update")
-    # sudo("apt-get install -q=2 -y aptitude")
-    # sudo("aptitude install -q=2 -y {0}".format(" ".join(dependencies)))
+    sudo("apt-get -q=2 update")
+    sudo("apt-get install -q=2 -y aptitude")
+    sudo("aptitude install -q=2 -y {0}".format(" ".join(dependencies)))
     sudo("(test -e /srv && rm -rf /srv/)")
     sudo("rm -rf /srv/goloka")
     sudo("rm -rf /var/log/goloka")
