@@ -38,7 +38,7 @@ else:
     HOST = env.get("HOST")
     DOMAIN = env.get("DOMAIN")
     GITHUB_CLIENT_ID = 'd92af7364bf699adae05'
-    GITHUB_CLIENT_SECRET = '1287f5b134cb293a0fb39d39731ddf457b634702'
+    GITHUB_CLIENT_SECRET = 'dcd96a0a6985d3ae48f8893b0bbb87ead5c59776'
     GIT_BIN_PATH = '/usr/bin/git'
     GPG_BIN = '/usr/bin/gpg'
 
