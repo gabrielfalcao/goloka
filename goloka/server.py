@@ -24,3 +24,8 @@ class SocketIOApp(object):
         return self.app.web(environ, start_response)
 
 app = SocketIOApp(App.from_env())
+from socketio.sgunicorn import GeventSocketIOWorker
+
+class GunicornWorker(GeventSocketIOWorker):
+    resource = 'socket.io'
+    policy_server = False

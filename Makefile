@@ -49,7 +49,7 @@ publish:
 	fi
 
 run:
-	@PYTHONPATH=`pwd` gunicorn -t 10000000000 -w 1 -b 127.0.0.1:5000 -k socketio.sgunicorn.GeventSocketIOWorker goloka.server:app
+	@PYTHONPATH=`pwd` gunicorn -t 10000000000 -w 1 -b 127.0.0.1:5000 -k goloka.server.GunicornWorker goloka.server:app
 
 check:
 	@PYTHONPATH=`pwd` ./goloka/bin.py check
