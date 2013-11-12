@@ -49,7 +49,6 @@ publish:
 	fi
 
 run:
-	@echo 'SHOW TABLES;' |mysql -uroot goloka || make local-migrate-forward
 	@PYTHONPATH=`pwd` gunicorn -t 10000000000 -w 1 -b 127.0.0.1:5000 -k socketio.sgunicorn.GeventSocketIOWorker goloka.server:app
 
 check:

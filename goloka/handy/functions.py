@@ -10,8 +10,10 @@ from goloka.log import logger
 def user_is_authenticated():
     from goloka import settings
     from goloka.models import User
-    data = session.get('github_user_data', False)
-    if data:
-        g.user = User.get_or_create_from_github_user(data)
+    data = session.get('github_user_data', {})
+    login = data.get('login')
+    if not login:
+        return False
 
-    return data and data['login']
+    g.user = User.find_one_by(username=login)
+    return True

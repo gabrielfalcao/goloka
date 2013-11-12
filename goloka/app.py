@@ -154,7 +154,6 @@ class App(object):
 
     def setup_logging(self, output, level):
         loggers = map(getLogger, [
-            'sqlalchemy',
             'goloka',
             'goloka.views',
             'goloka:websockets',

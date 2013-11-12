@@ -5,15 +5,13 @@ import gevent
 import random
 import traceback
 import json
+import logging
 from itertools import chain
 from gevent.coros import Semaphore
 from datetime import datetime
 from socketio.namespace import BaseNamespace
-import logging
 
 log = logging.getLogger('goloka:websockets')
-log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class Namespace(BaseNamespace):

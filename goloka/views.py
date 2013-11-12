@@ -276,6 +276,7 @@ def github_callback(token):
     github_user_data['github_token'] = token
 
     g.user = User.get_or_create_from_github_user(github_user_data)
+    logger.warning("Done getting user")
     session['github_user_data'] = github_user_data
     gh_user = GithubUser.from_token(token)
 

@@ -18,12 +18,9 @@ class SocketIOApp(object):
         from goloka.websockets import NAMESPACES
 
         if environ['PATH_INFO'].startswith('/socket.io'):
-            log.info("socket.io handling %s", environ['PATH_INFO'])
             socketio_manage(environ, NAMESPACES)
-            log.info("socket.io handled %s", environ['PATH_INFO'])
             return
 
-        log.info("flask handling %s", environ['PATH_INFO'])
         return self.app.web(environ, start_response)
 
 app = SocketIOApp(App.from_env())
