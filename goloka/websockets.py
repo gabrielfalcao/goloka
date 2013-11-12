@@ -8,11 +8,9 @@ from itertools import chain
 from gevent.coros import Semaphore
 from datetime import datetime
 from socketio.namespace import BaseNamespace
-from socketio.mixins import BroadcastMixin
-from redis import StrictRedis
+
 from goloka import db
 from goloka.models import User, Build
-redis = StrictRedis()
 
 
 class Namespace(BaseNamespace):
@@ -29,7 +27,7 @@ class Namespace(BaseNamespace):
         return ''
 
 
-class GolokaDashboard(Namespace, BroadcastMixin):
+class GolokaDashboard(Namespace):
     def on_save_build(self, md_token, build_info):
         user = User.using(db.engine).find_one_by(md_token=md_token)
 

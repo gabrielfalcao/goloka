@@ -27,8 +27,6 @@ from goloka.commands import init_command_manager
 from goloka import views
 
 
-
-
 class RedisSession(CallbackDict, SessionMixin):
 
     def __init__(self, initial=None, sid=None, new=False):
@@ -127,7 +125,7 @@ class App(object):
 
         # Logging
         if not self.testing_mode:
-            self.setup_logging(output=sys.stderr, level=logging.ERROR)
+            self.setup_logging(output=sys.stderr, level=logging.DEBUG)
 
 
         self.github.access_token_getter(views.get_github_token)
@@ -139,7 +137,14 @@ class App(object):
             return render_template('500.html'), 500
 
     def setup_logging(self, output, level):
-        for logger in [self.web.logger, getLogger('sqlalchemy'), getLogger('goloka.views')]:
+        other_loggers = map(getLogger, [
+            'sqlalchemy',
+            'goloka.views',
+            'goloka:workers',
+            'goloka:workers:ec2',
+            'goloka:workers:s3',
+        ])
+        for logger in [self.web.logger, other_loggers]:
             logger.addHandler(StreamHandler(output))
             logger.setLevel(level)
 
