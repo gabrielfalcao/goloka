@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import gevent
 import random
 import traceback
@@ -8,6 +9,11 @@ from itertools import chain
 from gevent.coros import Semaphore
 from datetime import datetime
 from socketio.namespace import BaseNamespace
+import logging
+
+log = logging.getLogger('goloka:websockets')
+log.setLevel(logging.INFO)
+log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class Namespace(BaseNamespace):
@@ -45,7 +51,7 @@ class GolokaDashboard(Namespace):
             repository=repository,
             script=script,
         )
-        print "Build created", my_build
+        log.info("Build created %s", my_build)
         self.emit("build_saved", my_build.to_dict())
 
     def on_run_build(self, md_token, build_token):
@@ -53,11 +59,12 @@ class GolokaDashboard(Namespace):
         my_build = Build.get_by_token(build_token)
         if my_build:
             my_build.run()
-            print "Running build", my_build
+            log.info("Running build %s", my_build)
+
             self.emit("build_run_confirmed", my_build.to_dict())
 
         else:
-            print "No build found", build_token
+            log.info("No build found for token %s", build_token)
             self.emit("unable_to_schedule_build", build_token)
 
 

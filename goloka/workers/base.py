@@ -10,8 +10,6 @@ from threading import RLock, Thread
 from redis import StrictRedis
 
 log = logging.getLogger('goloka:workers')
-log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class Heart(object):

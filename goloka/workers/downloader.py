@@ -20,8 +20,6 @@ from goloka.api import GithubEndpoint
 from redis import StrictRedis
 
 log = logging.getLogger('goloka:workers')
-log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class LocalStem(object):

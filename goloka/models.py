@@ -126,6 +126,9 @@ class Build(object):
         self.machine_token = machine_token or self.create_hash()
         self.extra_script = extra_script or ''
 
+    def __str__(self):
+        return '<Build environment_name="{environment_name}", repository="{repository[full_name]}">'.format(**self.to_dict())
+
     @property
     def token(self):
         return self.machine_token

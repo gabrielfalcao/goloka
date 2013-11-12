@@ -5,7 +5,7 @@ import sys
 import logging
 import pickle
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from uuid import uuid4
 from redis import StrictRedis
 from werkzeug.datastructures import CallbackDict
@@ -25,6 +25,23 @@ from sqlalchemy import (
 from goloka.assets import AssetsManager
 from goloka.commands import init_command_manager
 from goloka import views
+
+
+class PrettyFormatter(logging.Formatter):
+    COLORS = {
+        'DEBUG': '\033[37m',
+        'INFO': '\033[32m',
+        'ERROR': '\033[1;31m',
+        'WARNING': '\033[32m',
+        'CRITICAL': '\033[35m',
+        'FATAL': '\033[36m',
+    }
+    def format(self, record):
+        level_name = record.levelname
+        original = logging.Formatter.format(self, record)
+        color = self.COLORS.get(level_name, '\033[37m')
+        time = datetime.now().strftime("\033[37m[%Y-%m-%d %H:%M:%S]\033[0m")
+        return "{time} {color}[{level_name}]\033[1;37m {original}\033[0m".format(**locals())
 
 
 class RedisSession(CallbackDict, SessionMixin):
@@ -127,7 +144,6 @@ class App(object):
         if not self.testing_mode:
             self.setup_logging(output=sys.stderr, level=logging.DEBUG)
 
-
         self.github.access_token_getter(views.get_github_token)
         self.web.route('/.sys/callback')(self.github.authorized_handler(views.github_callback))
 
@@ -139,14 +155,19 @@ class App(object):
     def setup_logging(self, output, level):
         loggers = map(getLogger, [
             'sqlalchemy',
+            'goloka',
             'goloka.views',
+            'goloka:websockets',
             'goloka:workers',
             'goloka:workers:ec2',
             'goloka:workers:s3',
         ])
         loggers.append(self.web.logger)
+        handler = StreamHandler(output)
+        fmt = PrettyFormatter()
+        handler.setFormatter(fmt)
         for logger in loggers:
-            logger.addHandler(StreamHandler(output))
+            logger.addHandler(handler)
             logger.setLevel(level)
 
     @classmethod

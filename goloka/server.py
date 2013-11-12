@@ -9,8 +9,6 @@ from socketio import socketio_manage
 from socketio.server import SocketIOServer
 
 log = logging.getLogger('goloka:websockets')
-log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler(sys.stderr))
 
 class SocketIOApp(object):
     def __init__(self, app):

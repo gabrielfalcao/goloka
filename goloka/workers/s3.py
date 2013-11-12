@@ -11,8 +11,6 @@ from boto.s3.connection import Location
 from goloka.workers.base import Worker
 
 log = logging.getLogger('goloka:workers:s3')
-log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class S3Worker(Worker):

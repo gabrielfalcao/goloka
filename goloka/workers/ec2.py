@@ -12,9 +12,6 @@ from goloka.workers.base import Worker
 from goloka import settings
 
 log = logging.getLogger('goloka:workers:ec2')
-log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler(sys.stdout))
-
 
 class EC2Worker(Worker):
     def serialize_instance(self, instance):
