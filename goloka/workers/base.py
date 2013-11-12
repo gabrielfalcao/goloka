@@ -35,7 +35,7 @@ class Worker(Thread):
         self.consume_queue = consume_queue
         self.produce_queue = produce_queue
         self.heart = Heart()
-        self.daemon = True
+        self.daemon = False
 
     def __str__(self):
         return '<{0}>'.format(self.__class__.__name__)
@@ -71,7 +71,7 @@ class Worker(Thread):
         while self.heart.is_beating():
             self.before_consume()
             instructions = self.consume_queue.get()
-            if not instructions or 'error' in instructions:
+            if not instructions:
                 sys.exit(1)
             try:
                 self.consume(instructions)
